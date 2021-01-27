@@ -1,0 +1,118 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Receipt</title>
+  <style>
+  table {
+    width:20%;
+  }
+  table, th, td {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  tr.border-bottom, td {
+    border-bottom: 1px solid #000;
+  }
+
+  td, th {
+    padding: 5px;
+    text-align: left;
+  }
+
+  th.text {
+    text-align:center;
+  }
+
+  p {
+    font-size: 8px;
+  }
+
+  h2 {
+    font-size: 10px;
+    margin-top: 120px;
+  }
+
+  </style>
+</head>
+<body>
+  <div>
+    <center>
+      <div></div>
+      <div>
+        <h2>Товарный чек<br><br>******************</h2>
+      </div>
+    </center>
+    <div>
+					<div>
+						<table>
+              <tr  class="border-bottom">
+                <tr>
+                  <td><p>Кассовая смена открыто</p></td>
+                  <td><p></p></td>
+                  <td><p></p></td>
+                  <td><p>14.08.99</p></td>
+                </tr>
+
+                <tr>
+                <td><p>Кассир</p></td>
+                <td><p></p></td>
+                <td><p></p></td>
+                <td><p>{{clientorder.cashier.fullname}}</p></td>
+              </tr>
+
+              <tr>
+                <td><p>Дата</p></td>
+                <td><p></p></td>
+                <td><p></p></td>
+                <td><p>{{clientorder.datetime}}</p></td>
+              </tr>
+
+							<tr>
+								<th><p>Наименование</p></th>
+								<th><p>К-во</p></th>
+								<th><p>Цена</p></th>
+                <th><p>Сумма</p></th><br>
+							</tr>
+              {% for i in clientitem%}
+							<tr>
+								<td><p>{{i.itemglobal.name}}</p></td>
+								<td><p>{{i.quantity}}</p></td>
+								<td><p>{{i.costone}}</p></td>
+                <td><p>{{i.costtotal}}</p></td>
+							</tr>
+              {% endfor %}
+
+              <tr>
+                <th><p>Итого:</p></th>
+                <th><p></p></th>
+                <th><p></p></th>
+                <th><p></p></th>
+              </tr>
+
+              <tr>
+                <td><p>Всего наименований:</p></td>
+                <td><p></p></td>
+                <td><p></p></td>
+                <td><p>{{clientorder.countitem}}</p></td>
+              </tr>
+
+              <tr>
+                <td><p>Итого к оплате:</p></td>
+                <td><p></p></td>
+                <td><p></p></td>
+                <td><p>{{clientorder.total}}</p></td>
+              </tr>
+
+						</table>
+            <table>
+              <tr>
+                <br><br><th class="text"><p>СПАСИБО! ЖДЕМ ВАС СНОВА!</p></th>
+              </tr>
+            </table>
+					</div>
+				</div>
+  </div>
+</body>
+</html>

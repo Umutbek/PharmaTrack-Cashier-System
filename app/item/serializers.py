@@ -1,0 +1,122 @@
+from rest_framework import serializers
+from core import models
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    """Serializer for category"""
+    class Meta:
+        model = models.Category
+        fields = ('id', 'name', 'storeid', 'totalCost', 'totalQuantity')
+        read_only_fields = ('id',)
+
+
+class GlobalItemSerializer(serializers.ModelSerializer):
+    """Serializer for Item"""
+
+    class Meta:
+        model = models.GlobalItem
+        fields = (
+            'id', 'uniqueid', 'name', 'category', 'image', 'description'
+        )
+        read_only_fields = ('id',)
+
+
+class ItemSerializer(serializers.ModelSerializer):
+    """Serializer for Item active"""
+
+    class Meta:
+        model = models.Item
+        fields = (
+            'id', 'itemglobal', 'quantity', 'costin',
+            'costsale', 'storeid'
+        )
+        read_only_fields = ('id',)
+
+
+class StoreOrderSerializer(serializers.ModelSerializer):
+    """Serializer for store order"""
+
+    class Meta:
+        model = models.StoreOrder
+        fields = (
+            'id', 'itemglobal', 'quantity', 'cost'
+        )
+        read_only_fields = ('id',)
+
+
+class ItemsInSerializer(serializers.ModelSerializer):
+    """Serializer for store order"""
+    storeorderitem = StoreOrderSerializer(many=True, required=False, allow_null=True)
+
+    class Meta:
+        model = models.ItemsIn
+        fields = (
+            'id', 'storeorderitem', 'uniqueid', 'address', 'datesent', 'storedepotid', 'totalCount', 'totalCost', 'status'
+        )
+        read_only_fields = ('id', 'uniqueid', 'datereceived', 'totalCount', 'totalCost', 'status')
+
+    def create(self, validated_data):
+        storeorderitem = validated_data.pop("storeorderitem", None)
+        itemin = models.ItemsIn.objects.create(**validated_data)
+        if storeorderitem:
+            for i in storeorderitem:
+                models.StoreOrder.objects.create(itemin=itemin, **i)
+        return itemin
+
+
+class OrderIdSerializer(serializers.ModelSerializer):
+    """Serializer for get order id"""
+    class Meta:
+        model = models.OrderReceived
+
+        fields = (
+            'id', 'orderid'
+        )
+        read_only_fields = ('id',)
+
+
+class ClientItemOrderSerializer(serializers.ModelSerializer):
+    """Serializer for client order"""
+
+    class Meta:
+        model = models.ClientOrderItem
+        fields = (
+            'id', 'itemglobal', 'quantity', 'date', 'costone', 'costtotal'
+        )
+        read_only_fields = ('id',)
+
+
+class ClientOrderSerializer(serializers.ModelSerializer):
+    """Serializer for client order"""
+    clientorder = ClientItemOrderSerializer(many=True, required=False, allow_null=True)
+
+    class Meta:
+        model = models.ClientOrder
+        fields = (
+            'id', 'clientorder', 'datetime', 'cashier', 'countitem', 'total'
+        )
+        read_only_fields = ('id',)
+
+    def create(self, validated_data):
+
+        clientorder = validated_data.pop("clientorder", None)
+        print("Clientiem", clientorder)
+        transactionid = models.ClientOrder.objects.create(**validated_data)
+
+        if clientorder:
+            for i in clientorder:
+                print("I", i)
+                models.ClientOrderItem.objects.create(transactionid=transactionid, **i)
+
+        return transactionid
+
+
+class ReportSerializer(serializers.ModelSerializer):
+    """Serializer for store order"""
+
+    class Meta:
+        model = models.Report
+        fields = (
+            'id', 'datefrom', 'dateto', 'inTotal', 'incomeTotal', 'earnTotal'
+        )
+        read_only_fields = ('id', 'inTotal', 'incomeTotal', 'earnTotal')
