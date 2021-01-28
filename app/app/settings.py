@@ -131,3 +131,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'core.User'
+
+try:
+    from .local_settings import *
+except ImportError:
+    pass
