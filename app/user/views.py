@@ -9,6 +9,10 @@ from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from core import models
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
+from django_filters import FilterSet
+from django_filters import rest_framework as filters
 
 
 class CreateUserView(generics.CreateAPIView):
@@ -163,7 +167,7 @@ class StoreDepotFilter(FilterSet):
         fields = ('type')
 
 
-class GetStoreDepotView(ListAPIView):
+class GetStoreDepotView(generics.ListAPIView):
     serializer_class = serializers.UserSerializer
     queryset = models.User.objects.all()
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
