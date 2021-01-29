@@ -11,6 +11,8 @@ urlpatterns = [
     path('items/', views.ActiveItemsView.as_view()),
     path('sendorderid/', views.OrderIdView.as_view()),
 
+    path('addstoreitem/', views.AddStoreItemView.as_view()),
+
     path('itemsin/', views.ItemsInView.as_view()),
 
     path('clientorder/', views.ClientOrderView.as_view()),

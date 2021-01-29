@@ -21,6 +21,16 @@ class GlobalItemSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
 
+class AddStoreItemSerializer(serializers.ModelSerializer):
+    """Serializer for adding item to store"""
+    class Meta:
+        model = models.AddStoreItem
+        fields = (
+            'id', 'uniqueid', 'cost', 'quantity', 'storeid'
+        )
+        read_only_fields = ('id',)
+
+
 class ItemSerializer(serializers.ModelSerializer):
     """Serializer for Item active"""
 

@@ -122,6 +122,14 @@ class Item(models.Model):
         return self.itemglobal.name
 
 
+class AddStoreItem(models.Model):
+    """Model for item add to store"""
+    uniqueid = models.CharField(max_length=200)
+    cost = models.FloatField()
+    quantity = models.IntegerField()
+    storeid = models.ForeignKey(User, on_delete=models.CASCADE, related_name="itemadd", null=True)
+
+
 class ItemsIn(models.Model):
     """Model for store order"""
     uniqueid = models.IntegerField(null=True, blank=True)

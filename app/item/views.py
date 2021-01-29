@@ -48,9 +48,16 @@ class CategoryView(APIView):
                 status=status.HTTP_400_BAD_REQUEST)
 
 
+
 class GlobalItemView(APIView, PaginationHandlerMixin):
     """API view for global item list"""
     serializer_class = serializers.GlobalItemSerializer
+
+    def get(self, request):
+        """Return list of clinet order"""
+        globalitem = models.GlobalItem.objects.all()
+        serializer = serializers.GlobalItemSerializer(globalitem, many=True)
+        return Response(serializer.data)
 
     def post(self, request):
         """Create new itemglobal"""
@@ -82,6 +89,41 @@ class ActiveItemsView(ListAPIView):
     queryset = models.Item.objects.all()
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     filter_class = ItemFilter
+
+
+class AddStoreItemView(APIView):
+    """API view for client order list"""
+    serializer_class = serializers.AddStoreItemSerializer
+
+    def post(self, request):
+        """Create new store order"""
+        serializer = serializers.AddStoreItemSerializer(data=request.data)
+        if serializer.is_valid():
+            saved_data = serializer.save()
+            itemglobal = models.GlobalItem.objects.get(uniqueid=saved_data.uniqueid)
+            if itemglobal:
+                item = models.Item.objects.filter(itemglobal=itemglobal.id) & models.Item.objects.filter(storeid=saved_data.storeid)
+                if item:
+                    for i in item:
+                        i.quantity = i.quantity + saved_data.quantity
+                        i.costin = saved_data.cost
+                        i.save()
+                        saved_data.delete()
+                else:
+                    active = models.Item(
+                        itemglobal = itemglobal, quantity = saved_data.quantity, costin = saved_data.cost,
+                        storeid=saved_data.storeid
+                    )
+                    active.save()
+                    saved_data.delete()
+                return Response(serializer.data)
+
+            else:
+                return Response({'Success':False})
+        else:
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST)
 
 
 class ItemsInView(APIView):

@@ -15,9 +15,10 @@ from django_filters import FilterSet
 from django_filters import rest_framework as filters
 
 
-class CreateUserView(generics.CreateAPIView):
+class CreateUserView(generics.ListCreateAPIView):
     """Create new user in system"""
     serializer_class = serializers.UserSerializer
+    queryset = models.User.objects.all()
 
 
 class CreateTokenView(APIView):
