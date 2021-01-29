@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/user/', include('user.urls')),
-    path('api/item/', include('item.urls')),
+    path('pyapps/venv/admin/', admin.site.urls),
+    path('pyapps/venv/api/user/', include('user.urls')),
+    path('pyapps/venv/api/item/', include('item.urls')),
 ]
