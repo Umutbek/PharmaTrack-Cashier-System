@@ -7,6 +7,8 @@ urlpatterns = [
     path('register/', views.CreateUserView.as_view(), name='create'),
     path('registercashier/', views.CreateCashierView.as_view(), name='createcashier'),
 
+    path('getstoredepot/', views.GetStoreDepotView.as_view()),
+
     path('login/', views.CreateTokenView.as_view(), name='token'),
     path('logincashier/', views.CashierLoginView.as_view()),
 

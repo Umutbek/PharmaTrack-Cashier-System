@@ -152,3 +152,19 @@ class CashierIDView(APIView):
             return Response(
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST)
+
+
+class StoreDepotFilter(FilterSet):
+    """Filter for an item"""
+    type = filters.CharFilter('type')
+
+    class Meta:
+        models = models.User
+        fields = ('type')
+
+
+class GetStoreDepotView(ListAPIView):
+    serializer_class = serializers.UserSerializer
+    queryset = models.User.objects.all()
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+    filter_class = StoreDepotFilter
