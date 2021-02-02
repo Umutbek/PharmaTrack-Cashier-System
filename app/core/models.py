@@ -136,6 +136,8 @@ class ItemsIn(models.Model):
     address = models.TextField(null=True, blank=True)
     datesent = models.DateTimeField(auto_now_add=True, null=True)
     datereceived = models.DateTimeField(auto_now_add=True, null=True)
+    depotid = models.ForeignKey(User, on_delete=models.CASCADE, related_name="depotid", null=True)
+
     storedepotid = models.ForeignKey(User, on_delete=models.CASCADE, related_name="storedepotid", null=True)
     totalCount = models.IntegerField(default=0)
     totalCost = models.FloatField(default=0)
