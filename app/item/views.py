@@ -48,7 +48,6 @@ class CategoryView(APIView):
                 status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class GlobalItemView(APIView, PaginationHandlerMixin):
     """API view for global item list"""
     serializer_class = serializers.GlobalItemSerializer
@@ -172,7 +171,24 @@ class StoreOrderDetailView(APIView):
 
         context = {'storeorder': storeorder, 'storeitem':storeitem}
         return render(request, 'storeorder.html', context)
-        
+
+
+class ItemFilter(FilterSet):
+    """Filter for an item"""
+    storeid = filters.CharFilter('itemin__storedepotid')
+
+    class Meta:
+        models = models.Item
+        fields = ('storeid',)
+
+
+class GetOrderView(ListAPIView):
+    """API view for client selected items"""
+    serializer_class = serializers.StoreOrderSerializer
+    queryset = models.StoreOrder.objects.all()
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+    filter_class = ItemFilter
+
 
 class OrderIdView(APIView):
     """API view for global item list"""
