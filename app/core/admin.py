@@ -29,3 +29,10 @@ class UserAdmin(BaseUserAdmin):
 
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Cashier)
+admin.site.register(models.GlobalItem)
+admin.site.register(models.Item)
+admin.site.register(models.AddStoreItem)
+admin.site.register(models.ItemsIn)
+admin.site.register(models.StoreOrder)
+admin.site.register(models.ClientOrder)
+admin.site.register(models.ClientOrderItem)
