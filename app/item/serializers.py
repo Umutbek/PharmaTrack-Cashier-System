@@ -44,6 +44,18 @@ class ItemSerializer(serializers.ModelSerializer):
         depth=1
 
 
+class StoreOrderDetailSerializer(serializers.ModelSerializer):
+    """Serializer for store order"""
+
+    class Meta:
+        model = models.StoreOrder
+        fields = (
+            'id', 'itemglobal', 'quantity', 'cost'
+        )
+        read_only_fields = ('id',)
+        depth=1
+
+
 class StoreOrderSerializer(serializers.ModelSerializer):
     """Serializer for store order"""
 

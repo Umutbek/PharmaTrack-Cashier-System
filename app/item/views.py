@@ -184,7 +184,7 @@ class ItemFilter(FilterSet):
 
 class GetOrderView(ListAPIView):
     """API view for client selected items"""
-    serializer_class = serializers.StoreOrderSerializer
+    serializer_class = serializers.StoreOrderDetailSerializer
     queryset = models.StoreOrder.objects.all()
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     filter_class = ItemFilter
