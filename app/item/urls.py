@@ -14,6 +14,8 @@ urlpatterns = [
     path('addstoreitem/', views.AddStoreItemView.as_view()),
 
     path('itemsin/', views.ItemsInView.as_view()),
+    path('itemsin/<int:pk>', views.StoreOrderDetailView.as_view()),
+
 
     path('clientorder/', views.ClientOrderView.as_view()),
     path('clientitemorder/', views.ClientItemOrderView.as_view()),

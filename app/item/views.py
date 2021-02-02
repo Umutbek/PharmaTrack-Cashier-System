@@ -150,6 +150,30 @@ class ItemsInView(APIView):
                 )
 
 
+class StoreOrderDetailView(APIView):
+    """API view for client order list"""
+    serializer_class = serializers.ItemsInSerializer
+
+    def get(self, request, pk):
+        """Return list of clinet order"""
+        storeorder = models.ItemsIn.objects.get(pk=pk)
+        serializer = serializers.ItemsInSerializer(storeorder)
+        storeitem = models.StoreOrder.objects.filter(itemin=pk)
+        count = 0
+        count1 = 0
+        for i in storeitem:
+            i.costTotal = i.quantity * i.cost
+            count = count + i.costTotal
+            count1 = count1 + 1
+            i.save()
+        storeorder.totalCost = count
+        storeorder.totalCount = count1
+        storeorder.save()
+
+        context = {'storeorder': storeorder, 'storeitem':storeitem}
+        return render(request, 'storeorder.html', context)
+        
+
 class OrderIdView(APIView):
     """API view for global item list"""
     serializer_class = serializers.OrderIdSerializer

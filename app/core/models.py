@@ -151,6 +151,7 @@ class StoreOrder(models.Model):
     itemglobal = models.ForeignKey(GlobalItem, on_delete=models.CASCADE, related_name="storeorder", null=True)
     quantity = models.IntegerField()
     cost = models.FloatField()
+    costTotal = models.FloatField(default=0)
 
 
 class OrderReceived(models.Model):
