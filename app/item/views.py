@@ -13,7 +13,6 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from item.pagination import PaginationHandlerMixin
-from item.utils import render_to_pdf
 
 
 class CategoryFilter(FilterSet):
