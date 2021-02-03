@@ -74,7 +74,7 @@ class ItemsInSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ItemsIn
         fields = (
-            'id', 'storeorderitem', 'uniqueid', 'address', 'datesent', 'storedepotid', 'totalCount', 'totalCost', 'status'
+            'id', 'storeorderitem', 'uniqueid', 'address', 'datesent', 'storedepotid', 'depotid', 'totalCount', 'totalCost', 'status'
         )
         read_only_fields = ('id', 'uniqueid', 'datereceived', 'totalCount', 'totalCost', 'status')
 
@@ -85,6 +85,18 @@ class ItemsInSerializer(serializers.ModelSerializer):
             for i in storeorderitem:
                 models.StoreOrder.objects.create(itemin=itemin, **i)
         return itemin
+
+
+class GetItemsInSerializer(serializers.ModelSerializer):
+    """Serializer for store order"""
+
+    class Meta:
+        model = models.ItemsIn
+        fields = (
+            'id', 'address', 'datesent', 'storedepotid', 'depotid'
+        )
+        read_only_fields = ('id',)
+        depth=1
 
 
 class OrderIdSerializer(serializers.ModelSerializer):

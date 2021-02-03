@@ -13,6 +13,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from item.pagination import PaginationHandlerMixin
+from item.utils import render_to_pdf
 
 
 class CategoryFilter(FilterSet):
@@ -129,12 +130,6 @@ class ItemsInView(APIView):
     """API view for store order list"""
     serializer_class = serializers.ItemsInSerializer
 
-    def get(self, request):
-        """Return list of clinet order"""
-        itemsin = models.ItemsIn.objects.all()
-        serializer = serializers.ItemsInSerializer(itemsin, many=True)
-        return Response(serializer.data)
-
     def post(self, request):
         """Create new store order"""
         serializer = serializers.ItemsInSerializer(data=request.data)
@@ -147,6 +142,24 @@ class ItemsInView(APIView):
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST
                 )
+
+
+class ItemsInFilter(FilterSet):
+    """Filter for an item"""
+    storeid = filters.CharFilter('storedepotid')
+    depotid = filters.CharFilter('depotid')
+
+    class Meta:
+        models = models.ItemsIn
+        fields = ('storeid', 'depotid')
+
+
+class GetItemsInView(ListAPIView):
+    """API view for client selected items"""
+    serializer_class = serializers.GetItemsInSerializer
+    queryset = models.ItemsIn.objects.all()
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+    filter_class = ItemsInFilter
 
 
 class StoreOrderDetailView(APIView):
@@ -175,11 +188,11 @@ class StoreOrderDetailView(APIView):
 
 class ItemFilter(FilterSet):
     """Filter for an item"""
-    storeid = filters.CharFilter('itemin__storedepotid')
+    order = filters.CharFilter('itemin')
 
     class Meta:
-        models = models.Item
-        fields = ('storeid',)
+        models = models.StoreOrder
+        fields = ('order',)
 
 
 class GetOrderView(ListAPIView):
