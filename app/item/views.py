@@ -13,6 +13,8 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from item.pagination import PaginationHandlerMixin
+import datetime
+from dateutil.relativedelta import relativedelta
 
 
 class CategoryFilter(FilterSet):
@@ -141,6 +143,21 @@ class ItemsInView(APIView):
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST
                 )
+
+class ItemsInDetailView(APIView):
+    serializer_class = serializers.ItemsInSerializer
+
+    def get(self, request, pk):
+        """Return a list of category details"""
+        item = models.ItemsIn.objects.get(pk=pk)
+        b = item.datesent
+        a = datetime.datetime.now()
+        
+        if b.day < a.day or b.month < a.month:
+            item.iseditable = False
+
+        serializer = serializers.ItemsInSerializer(item)
+        return Response(serializer.data)
 
 
 class ItemsInFilter(FilterSet):

@@ -142,6 +142,7 @@ class ItemsIn(models.Model):
     totalCount = models.IntegerField(default=0)
     totalCost = models.FloatField(default=0)
     status = models.BooleanField(default=False)
+    iseditable = models.BooleanField(default=True)
 
     def storeorderitem(self):
         return self.storeorder_set.all()

@@ -74,9 +74,9 @@ class ItemsInSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ItemsIn
         fields = (
-            'id', 'storeorderitem', 'uniqueid', 'address', 'datesent', 'storedepotid', 'depotid', 'totalCount', 'totalCost', 'status'
+            'id', 'storeorderitem', 'uniqueid', 'address', 'datesent', 'storedepotid', 'depotid', 'totalCount', 'totalCost', 'status', 'iseditable'
         )
-        read_only_fields = ('id', 'uniqueid', 'datereceived', 'totalCount', 'totalCost', 'status')
+        read_only_fields = ('id', 'uniqueid', 'datereceived', 'totalCount', 'totalCost', 'status', 'iseditable')
 
     def create(self, validated_data):
         storeorderitem = validated_data.pop("storeorderitem", None)
@@ -93,9 +93,9 @@ class GetItemsInSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ItemsIn
         fields = (
-            'id', 'address', 'datesent', 'storedepotid', 'depotid'
+            'id', 'address', 'datesent', 'storedepotid', 'depotid', 'iseditable'
         )
-        read_only_fields = ('id',)
+        read_only_fields = ('id', 'iseditable')
         depth=1
 
 
