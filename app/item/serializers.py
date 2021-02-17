@@ -140,7 +140,6 @@ class ClientOrderSerializer(serializers.ModelSerializer):
 
         if clientorder:
             for i in clientorder:
-                print("I", i)
                 models.ClientOrderItem.objects.create(transactionid=transactionid, **i)
 
         return transactionid
