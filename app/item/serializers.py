@@ -94,7 +94,7 @@ class GetItemsInSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ItemsIn
         fields = (
-            'id', 'address', 'datesent', 'storedepotid', 'depotid', 'iseditable'
+            'id', 'storeorderitem', 'address', 'datesent', 'storedepotid', 'depotid', 'iseditable'
         )
         read_only_fields = ('id', 'iseditable')
         depth=1
