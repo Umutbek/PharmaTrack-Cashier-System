@@ -244,8 +244,9 @@ class OrderIdView(APIView):
                             break
                     else:
                         itemsin.status = True
+                        max = models.Item.objects.all().order_by("-id")[0]
                         active = models.Item(
-                            itemglobal = i.itemglobal, quantity = i.quantity,
+                            id=max.id+1, itemglobal = i.itemglobal, quantity = i.quantity,
                             storeid=itemsin.storedepotid, costin=i.cost
                         )
                         active.save()
