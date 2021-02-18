@@ -233,7 +233,7 @@ class OrderIdView(APIView):
 
             if itemsin and order:
                 for i in order:
-                    activeitems = models.Item.objects.filter(itemglobal=i.itemglobal.id) & models.Item.objects.filter(storeid__type=2)
+                    activeitems = models.Item.objects.filter(itemglobal=i.itemglobal.id) & models.Item.objects.filter(storeid__type=1)
                     if activeitems:
                         for j in activeitems:
                             j.quantity = j.quantity + i.quantity
