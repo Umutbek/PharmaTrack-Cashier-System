@@ -152,7 +152,7 @@ class ItemsInDetailView(APIView):
         item = models.ItemsIn.objects.get(pk=pk)
         b = item.datesent
         a = datetime.datetime.now()
-        
+
         if b.day < a.day or b.month < a.month:
             item.iseditable = False
 
@@ -233,7 +233,7 @@ class OrderIdView(APIView):
 
             if itemsin and order:
                 for i in order:
-                    activeitems = models.Item.objects.filter(itemglobal=i.itemglobal.id)
+                    activeitems = models.Item.objects.filter(itemglobal=i.itemglobal.id) & models.Item.objects.filter(storeid__type=2)
                     if activeitems:
                         for j in activeitems:
                             j.quantity = j.quantity + i.quantity
