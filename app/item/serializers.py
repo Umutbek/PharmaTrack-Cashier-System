@@ -89,6 +89,7 @@ class ItemsInSerializer(serializers.ModelSerializer):
 
 class GetItemsInSerializer(serializers.ModelSerializer):
     """Serializer for store order"""
+    storeorderitem = StoreOrderSerializer(many=True, required=False, allow_null=True)
 
     class Meta:
         model = models.ItemsIn
