@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.generics import ListAPIView
 from django.shortcuts import render
 from item import serializers
@@ -20,7 +20,6 @@ from dateutil.relativedelta import relativedelta
 class CategoryFilter(FilterSet):
     """Filter for an item"""
     storeid = filters.CharFilter('storeid')
-
     class Meta:
         models = models.Category
         fields = ('storeid')
@@ -85,11 +84,16 @@ class ItemFilter(FilterSet):
 
 class ActiveItemsView(ListAPIView):
     """View for Active items"""
-
     serializer_class = serializers.ItemSerializer
     queryset = models.Item.objects.all()
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     filter_class = ItemFilter
+
+
+class UpdateItemsView(generics.RetrieveUpdateDestroyAPIView):
+    """Create new user in system"""
+    serializer_class = serializers.ItemSerializer
+    queryset = models.Item.objects.all()
 
 
 class AddStoreItemView(APIView):
