@@ -44,6 +44,18 @@ class ItemSerializer(serializers.ModelSerializer):
         depth=1
 
 
+class ItemPostSerializer(serializers.ModelSerializer):
+    """Serializer for Item active"""
+    id = serializers.IntegerField(required=False)
+
+    class Meta:
+        model = models.Item
+        fields = (
+            'id', 'itemglobal', 'quantity', 'costin',
+            'costsale', 'storeid'
+        )
+
+
 class StoreOrderDetailSerializer(serializers.ModelSerializer):
     """Serializer for store order"""
 

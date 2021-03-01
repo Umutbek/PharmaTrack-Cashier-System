@@ -90,6 +90,22 @@ class ActiveItemsView(ListAPIView):
     filter_class = ItemFilter
 
 
+class PostItemView(APIView):
+    """API view for category list"""
+    serializer_class = serializers.ItemPostSerializer
+
+    def post(self, request):
+        """Create new category"""
+        serializer = serializers.ItemPostSerializer(data=request.data)
+        if serializer.is_valid():
+            saved_data = serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST)
+
+
 class UpdateItemsView(generics.RetrieveUpdateDestroyAPIView):
     """Create new user in system"""
     serializer_class = serializers.ItemSerializer
