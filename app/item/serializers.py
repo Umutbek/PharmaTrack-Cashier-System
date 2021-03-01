@@ -12,13 +12,13 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class GlobalItemSerializer(serializers.ModelSerializer):
     """Serializer for Item"""
+    id = serializers.IntegerField(required=False)
 
     class Meta:
         model = models.GlobalItem
         fields = (
             'id', 'uniqueid', 'name', 'category', 'image', 'description'
         )
-        read_only_fields = ('id',)
 
 
 class AddStoreItemSerializer(serializers.ModelSerializer):
