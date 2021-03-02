@@ -77,6 +77,7 @@ class StoreOrderSerializer(serializers.ModelSerializer):
             'id', 'itemglobal', 'quantity', 'cost'
         )
         read_only_fields = ('id',)
+        depth=1
 
 
 class ItemsInSerializer(serializers.ModelSerializer):
