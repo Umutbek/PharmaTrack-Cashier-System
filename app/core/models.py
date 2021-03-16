@@ -99,14 +99,26 @@ class Category(models.Model):
 
 class GlobalItem(models.Model):
     """Model for itemGlobal"""
-    uniqueid = models.CharField(max_length=200,  blank=True)
+    uniqueid = models.CharField(max_length=200, blank=True, null=True)
     name = models.CharField(max_length=200)
+    producer = models.CharField(max_length=200, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
     image = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
+
+
+class FarmStoreItems(models.Model):
+    """Model for FarmStoreItems"""
+    globalitem = models.ForeignKey(GlobalItem, on_delete=models.CASCADE, null=True, blank=True)
+    seria = models.CharField(max_length=200, null=True)
+    deadline = models.DateField()
+    cost = models.FloatField()
+
+    def __str__(self):
+        return self.globalitem.name
 
 
 class Item(models.Model):
