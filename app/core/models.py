@@ -114,7 +114,7 @@ class FarmStoreItems(models.Model):
     """Model for FarmStoreItems"""
     globalitem = models.ForeignKey(GlobalItem, on_delete=models.CASCADE, null=True, blank=True)
     seria = models.CharField(max_length=200, null=True)
-    deadline = models.DateField()
+    deadline = models.CharField(max_length=200, null=True, blank=True)
     cost = models.FloatField()
 
     def __str__(self):
