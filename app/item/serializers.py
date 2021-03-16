@@ -17,7 +17,7 @@ class GlobalItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.GlobalItem
         fields = (
-            'id', 'uniqueid', 'name', 'category', 'image', 'description'
+            'id', 'uniqueid', 'name', 'producer', 'category', 'image', 'description'
         )
 
 
@@ -37,7 +37,7 @@ class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Item
         fields = (
-            'id', 'itemglobal', 'quantity', 'costin',
+            'id', 'itemglobal', 'quantity',
             'costsale', 'storeid'
         )
         read_only_fields = ('id',)
@@ -51,7 +51,7 @@ class ItemPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Item
         fields = (
-            'id', 'itemglobal', 'quantity', 'costin',
+            'id', 'itemglobal', 'quantity',
             'costsale', 'storeid'
         )
 

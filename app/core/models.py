@@ -125,8 +125,8 @@ class Item(models.Model):
     """Model for Active Items"""
     itemglobal = models.ForeignKey(GlobalItem, on_delete=models.CASCADE, related_name="itemglobal", null=True)
     quantity = models.IntegerField(null=True, blank=True)
-    costin = models.FloatField(null=True, blank=True)
     costsale= models.FloatField(null=True, blank=True)
+    issale = models.BooleanField(default=False)
     storeid = models.ForeignKey(User, on_delete=models.CASCADE, related_name="activestore", null=True)
 
     def __str__(self):
