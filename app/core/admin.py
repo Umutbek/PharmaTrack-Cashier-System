@@ -37,3 +37,5 @@ admin.site.register(models.ItemsIn)
 admin.site.register(models.StoreOrder)
 admin.site.register(models.ClientOrder)
 admin.site.register(models.ClientOrderItem)
+admin.site.register(models.FarmStoreItems)
+

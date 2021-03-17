@@ -26,7 +26,7 @@ class AddStoreItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.AddStoreItem
         fields = (
-            'id', 'uniqueid', 'cost', 'quantity', 'storeid'
+            'id', 'uniqueid', 'seria', 'quantity', 'storeid'
         )
         read_only_fields = ('id',)
 
@@ -37,8 +37,8 @@ class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Item
         fields = (
-            'id', 'itemglobal', 'quantity',
-            'costsale', 'storeid'
+            'id', 'farmstoreitems', 'quantity', 'sepparts',
+            'costsale', 'issale', 'storeid'
         )
         read_only_fields = ('id',)
         depth=1
@@ -51,8 +51,8 @@ class ItemPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Item
         fields = (
-            'id', 'itemglobal', 'quantity',
-            'costsale', 'storeid'
+            'id', 'farmstoreitems', 'quantity', 'sepparts'
+            'costsale', 'issale', 'storeid'
         )
 
 
@@ -62,7 +62,7 @@ class StoreOrderDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.StoreOrder
         fields = (
-            'id', 'itemglobal', 'quantity', 'cost'
+            'id', 'farmstoreitems', 'quantity'
         )
         read_only_fields = ('id',)
         depth=1
@@ -74,7 +74,7 @@ class StoreOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.StoreOrder
         fields = (
-            'id', 'itemglobal', 'quantity', 'cost'
+            'id', 'farmstoreitems', 'quantity', 'sepparts'
         )
         read_only_fields = ('id',)
         depth=1
@@ -130,7 +130,7 @@ class ClientItemOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.ClientOrderItem
         fields = (
-            'id', 'itemglobal', 'quantity', 'date', 'costone', 'costtotal'
+            'id', 'farmstoreitems', 'quantity', 'sepparts', 'date', 'costone', 'costtotal'
         )
         read_only_fields = ('id',)
 
@@ -149,7 +149,6 @@ class ClientOrderSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
 
         clientorder = validated_data.pop("clientorder", None)
-        print("Clientiem", clientorder)
         transactionid = models.ClientOrder.objects.create(**validated_data)
 
         if clientorder:

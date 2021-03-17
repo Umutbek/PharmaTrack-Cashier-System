@@ -74,8 +74,8 @@ class GlobalItemView(APIView, PaginationHandlerMixin):
 class ItemFilter(FilterSet):
     """Filter for an item"""
     storeid = filters.CharFilter('storeid')
-    category = filters.CharFilter('itemglobal__category')
-    uniqueid = filters.CharFilter('itemglobal__uniqueid')
+    category = filters.CharFilter('farmstoreitems__globalitem__category')
+    uniqueid = filters.CharFilter('farmstoreitems__globalitem__uniqueid')
 
     class Meta:
         models = models.Item
@@ -121,18 +121,18 @@ class AddStoreItemView(APIView):
         serializer = serializers.AddStoreItemSerializer(data=request.data)
         if serializer.is_valid():
             saved_data = serializer.save()
-            itemglobal = models.GlobalItem.objects.get(uniqueid=saved_data.uniqueid)
-            if itemglobal:
-                item = models.Item.objects.filter(itemglobal=itemglobal.id) & models.Item.objects.filter(storeid=saved_data.storeid)
+            farmstore = models.FarmStoreItems.objects.get(globalitem__uniqueid=saved_data.uniqueid) & models.FarmStoreItems.objects.get(seria=saved_data.seria)
+            if farmstore:
+                item = models.Item.objects.filter(farmstoreitems=farmstore.id) & models.Item.objects.filter(storeid=saved_data.storeid)
                 if item:
                     for i in item:
                         i.quantity = i.quantity + saved_data.quantity
-                        i.costin = saved_data.cost
+                        i.sepparts = i.sepparts + saved_data.sepparts
                         i.save()
                         saved_data.delete()
                 else:
                     active = models.Item(
-                        itemglobal = itemglobal, quantity = saved_data.quantity, costin = saved_data.cost,
+                        farmstoreitems = farmstore, quantity = saved_data.quantity, sepparts = saved_data.sepparts,
                         storeid=saved_data.storeid
                     )
                     active.save()
@@ -253,11 +253,11 @@ class OrderIdView(APIView):
 
             if itemsin and order:
                 for i in order:
-                    activeitems = models.Item.objects.filter(itemglobal=i.itemglobal.id) & models.Item.objects.filter(storeid__type=1)
+                    activeitems = models.Item.objects.filter(farmstoreitems=i.farmstoreitems.id) & models.Item.objects.filter(storeid__type=1)
                     if activeitems:
                         for j in activeitems:
                             j.quantity = j.quantity + i.quantity
-                            j.costin = i.cost
+                            j.sepparts = j.sepparts + i.sepparts
                             j.save()
                             itemsin.status = True
                             itemsin.save()
@@ -266,8 +266,8 @@ class OrderIdView(APIView):
                         itemsin.status = True
                         max = models.Item.objects.all().order_by("-id")[0]
                         active = models.Item(
-                            id=max.id+1, itemglobal = i.itemglobal, quantity = i.quantity,
-                            storeid=itemsin.storedepotid, costin=i.cost
+                            id=max.id+1, farmstoreitems = i.farmstoreitems, quantity = i.quantity, sepparts= i.sepparts,
+                            storeid=itemsin.storedepotid
                         )
                         active.save()
                         itemsin.save()

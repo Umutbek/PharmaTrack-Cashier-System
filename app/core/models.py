@@ -123,22 +123,24 @@ class FarmStoreItems(models.Model):
 
 class Item(models.Model):
     """Model for Active Items"""
-    itemglobal = models.ForeignKey(GlobalItem, on_delete=models.CASCADE, related_name="itemglobal", null=True)
+    farmstoreitems = models.ForeignKey(FarmStoreItems, on_delete=models.CASCADE, null=True)
     quantity = models.IntegerField(null=True, blank=True)
+    sepparts = models.FloatField(null=True, blank=True)
     costin= models.FloatField(null=True, blank=True)
     costsale= models.FloatField(null=True, blank=True)
-    issale = models.BooleanField(default=False)
+    issale = models.BooleanField(default=False, null=True)
     storeid = models.ForeignKey(User, on_delete=models.CASCADE, related_name="activestore", null=True)
 
     def __str__(self):
-        return self.itemglobal.name
+        return self.farmstoreitems.globalitem.name
 
 
 class AddStoreItem(models.Model):
-    """Model for item add to store"""
-    uniqueid = models.CharField(max_length=200)
-    cost = models.FloatField()
-    quantity = models.IntegerField()
+    """Model for new item add to store"""
+    uniqueid = models.CharField(max_length=200, null=True)
+    seria = models.CharField(max_length=200, null=True)
+    sepparts = models.FloatField(null=True)
+    quantity = models.IntegerField(null=True)
     storeid = models.ForeignKey(User, on_delete=models.CASCADE, related_name="itemadd", null=True)
 
 
@@ -163,9 +165,9 @@ class ItemsIn(models.Model):
 class StoreOrder(models.Model):
     """Model for store order"""
     itemin = models.ForeignKey(ItemsIn, on_delete=models.CASCADE, null=True)
-    itemglobal = models.ForeignKey(GlobalItem, on_delete=models.CASCADE, related_name="storeorder", null=True)
-    quantity = models.IntegerField()
-    cost = models.FloatField()
+    farmstoreitems = models.ForeignKey(FarmStoreItems, on_delete=models.CASCADE, related_name="storeorder", null=True)
+    quantity = models.IntegerField(null=True, blank=True)
+    sepparts = models.FloatField(null=True, blank=True)
     costTotal = models.FloatField(default=0)
 
 
@@ -197,8 +199,9 @@ class ClientOrder(models.Model):
 class ClientOrderItem(models.Model):
     """Model for Transaction Item"""
     transactionid = models.ForeignKey(ClientOrder, on_delete=models.CASCADE, null=True, blank=True)
-    itemglobal = models.ForeignKey(GlobalItem, on_delete=models.CASCADE, related_name="transaction", null=True)
-    quantity = models.FloatField(null=True)
+    farmstoreitems = models.ForeignKey(FarmStoreItems, on_delete=models.CASCADE, related_name="transaction", null=True)
+    quantity = models.FloatField(null=True, blank=True)
+    sepparts = models.FloatField(null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True, null=True)
     costone = models.FloatField()
     costtotal = models.FloatField(default=0)
