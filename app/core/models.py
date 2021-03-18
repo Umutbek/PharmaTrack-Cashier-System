@@ -114,8 +114,10 @@ class FarmStoreItems(models.Model):
     """Model for FarmStoreItems"""
     globalitem = models.ForeignKey(GlobalItem, on_delete=models.CASCADE, null=True, blank=True)
     seria = models.CharField(max_length=200, null=True)
+    sepparts = models.FloatField(null=True)
     deadline = models.CharField(max_length=200, null=True, blank=True)
     cost = models.FloatField(null=True)
+    totalcost = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         return self.globalitem.name
@@ -124,15 +126,12 @@ class FarmStoreItems(models.Model):
 class Item(models.Model):
     """Model for Active Items"""
     farmstoreitems = models.ForeignKey(FarmStoreItems, on_delete=models.CASCADE, null=True)
-    quantity = models.IntegerField(null=True, blank=True)
-    sepparts = models.FloatField(null=True, blank=True)
-    costin= models.FloatField(null=True, blank=True)
+    quantity = models.FloatField(null=True, blank=True)
+    parts = models.FloatField(null=True, blank=True)
     costsale= models.FloatField(null=True, blank=True)
     issale = models.BooleanField(default=False, null=True)
+    totalcost = models.FloatField(null=True, blank=True)
     storeid = models.ForeignKey(User, on_delete=models.CASCADE, related_name="activestore", null=True)
-
-    def __str__(self):
-        return self.farmstoreitems.globalitem.name
 
 
 class AddStoreItem(models.Model):
@@ -167,7 +166,6 @@ class StoreOrder(models.Model):
     itemin = models.ForeignKey(ItemsIn, on_delete=models.CASCADE, null=True)
     farmstoreitems = models.ForeignKey(FarmStoreItems, on_delete=models.CASCADE, related_name="storeorder", null=True)
     quantity = models.IntegerField(null=True, blank=True)
-    sepparts = models.FloatField(null=True, blank=True)
     costTotal = models.FloatField(default=0)
 
 
@@ -190,6 +188,7 @@ class ClientOrder(models.Model):
     cashier = models.ForeignKey(Cashier, on_delete=models.CASCADE, null=True, blank=True)
     countitem = models.IntegerField(null=True)
     total = models.FloatField(default=0)
+    status = models.BooleanField(default=False)
 
     @property
     def clientorder(self):
@@ -205,6 +204,11 @@ class ClientOrderItem(models.Model):
     date = models.DateTimeField(auto_now_add=True, null=True)
     costone = models.FloatField()
     costtotal = models.FloatField(default=0)
+
+
+class OrderReceivedClient(models.Model):
+    """Model for order receive"""
+    clientorderid = models.ForeignKey(ClientOrder, on_delete=models.CASCADE, null=True)
 
 
 class FinishCashier(models.Model):

@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from core import models
 
-
 class CategorySerializer(serializers.ModelSerializer):
     """Serializer for category"""
     class Meta:
@@ -21,12 +20,24 @@ class GlobalItemSerializer(serializers.ModelSerializer):
         )
 
 
+class FarmStoreItemsSerializer(serializers.ModelSerializer):
+    """Serializer for farmstoreitems Item"""
+    id = serializers.IntegerField(required=False)
+
+    class Meta:
+        model = models.FarmStoreItems
+        fields = (
+            'id', 'globalitem', 'seria', 'sepparts', 'deadline', 'cost'
+        )
+
+
+
 class AddStoreItemSerializer(serializers.ModelSerializer):
     """Serializer for adding item to store"""
     class Meta:
         model = models.AddStoreItem
         fields = (
-            'id', 'uniqueid', 'seria', 'quantity', 'storeid'
+            'id', 'uniqueid', 'seria', 'sepparts', 'quantity', 'storeid'
         )
         read_only_fields = ('id',)
 
@@ -37,8 +48,8 @@ class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Item
         fields = (
-            'id', 'farmstoreitems', 'quantity', 'sepparts',
-            'costsale', 'issale', 'storeid'
+            'id', 'farmstoreitems', 'quantity', 'parts',
+            'costsale', 'issale', 'totalcost', 'storeid'
         )
         read_only_fields = ('id',)
         depth=1
@@ -51,8 +62,8 @@ class ItemPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Item
         fields = (
-            'id', 'farmstoreitems', 'quantity', 'sepparts'
-            'costsale', 'issale', 'storeid'
+            'id', 'farmstoreitems', 'quantity', 'parts'
+            'costsale', 'issale', 'totalcost', 'storeid'
         )
 
 
@@ -74,7 +85,7 @@ class StoreOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.StoreOrder
         fields = (
-            'id', 'farmstoreitems', 'quantity', 'sepparts'
+            'id', 'farmstoreitems', 'quantity'
         )
         read_only_fields = ('id',)
         depth=1
@@ -156,6 +167,17 @@ class ClientOrderSerializer(serializers.ModelSerializer):
                 models.ClientOrderItem.objects.create(transactionid=transactionid, **i)
 
         return transactionid
+
+
+class ClientOrderIdSerializer(serializers.ModelSerializer):
+    """Serializer for get client order id"""
+    class Meta:
+        model = models.OrderReceivedClient
+
+        fields = (
+            'id', 'clientorderid'
+        )
+        read_only_fields = ('id',)
 
 
 class ReportSerializer(serializers.ModelSerializer):

@@ -4,12 +4,12 @@ from user import views
 app_name = 'user'
 
 urlpatterns = [
-    path('register/', views.CreateUserView.as_view(), name='create'),
+    path('registerstore/', views.CreateUserView.as_view(), name='create'),
     path('registercashier/', views.CreateCashierView.as_view(), name='createcashier'),
 
-    path('getstoredepot/', views.GetStoreDepotView.as_view()),
+    path('getstoreordepot/', views.GetStoreDepotView.as_view()),
 
-    path('login/', views.CreateTokenView.as_view(), name='token'),
+    path('loginstore/', views.CreateTokenView.as_view(), name='token'),
     path('logincashier/', views.CashierLoginView.as_view()),
 
     path('finishcashier/', views.FinishCashierView.as_view()),

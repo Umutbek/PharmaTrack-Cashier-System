@@ -7,9 +7,12 @@ urlpatterns = [
     path('category/', views.CategoryView.as_view()),
     path('getcategory/', views.GetCategoryView.as_view()),
     path('globalitem/', views.GlobalItemView.as_view()),
+    path('farmstoreitems/', views.FarmStoreItemsView.as_view()),
     path('items/', views.ActiveItemsView.as_view()),
     path('items/<int:pk>', views.UpdateItemsView.as_view()),
-    path('sendorderid/', views.OrderIdView.as_view()),
+    path('sendstoreorderid/', views.OrderIdView.as_view()),
+    path('sendclientorderid/', views.ClientOrderIdView.as_view()),
+
     path('addstoreitem/', views.AddStoreItemView.as_view()),
     path('itemsin/', views.ItemsInView.as_view()),
     path('itemsin/<int:pk>', views.ItemsInDetailView.as_view()),

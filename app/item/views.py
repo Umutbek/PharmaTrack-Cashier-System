@@ -71,6 +71,28 @@ class GlobalItemView(APIView, PaginationHandlerMixin):
                 status=status.HTTP_400_BAD_REQUEST)
 
 
+class FarmStoreItemsView(APIView, PaginationHandlerMixin):
+    """API view for farm store item list"""
+    serializer_class = serializers.FarmStoreItemsSerializer
+
+    def get(self, request):
+        """Return list of clinet order"""
+        farmstoreitems = models.FarmStoreItems.objects.all()
+        serializer = serializers.FarmStoreItemsSerializer(farmstoreitems, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        """Create new itemglobal"""
+        serializer = serializers.FarmStoreItemsSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        else:
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST)
+
+
 class ItemFilter(FilterSet):
     """Filter for an item"""
     storeid = filters.CharFilter('storeid')
@@ -127,12 +149,12 @@ class AddStoreItemView(APIView):
                 if item:
                     for i in item:
                         i.quantity = i.quantity + saved_data.quantity
-                        i.sepparts = i.sepparts + saved_data.sepparts
+                        i.parts = i.parts + saved_data.sepparts
                         i.save()
                         saved_data.delete()
                 else:
                     active = models.Item(
-                        farmstoreitems = farmstore, quantity = saved_data.quantity, sepparts = saved_data.sepparts,
+                        farmstoreitems = farmstore, quantity = saved_data.quantity, parts = saved_data.sepparts,
                         storeid=saved_data.storeid
                     )
                     active.save()
@@ -257,20 +279,30 @@ class OrderIdView(APIView):
                     if activeitems:
                         for j in activeitems:
                             j.quantity = j.quantity + i.quantity
-                            j.sepparts = j.sepparts + i.sepparts
+                            j.parts = j.parts + i.farmstoreitems.sepparts
                             j.save()
                             itemsin.status = True
                             itemsin.save()
                             break
                     else:
                         itemsin.status = True
-                        max = models.Item.objects.all().order_by("-id")[0]
-                        active = models.Item(
-                            id=max.id+1, farmstoreitems = i.farmstoreitems, quantity = i.quantity, sepparts= i.sepparts,
-                            storeid=itemsin.storedepotid
-                        )
-                        active.save()
-                        itemsin.save()
+                        check = models.Item.objects.all()
+                        if check:
+                            max = models.Item.objects.all().order_by("-id")[0]
+                            active = models.Item(
+                                id=max.id+1, farmstoreitems = i.farmstoreitems, quantity = i.quantity, parts= i.farmstoreitems.sepparts,
+                                storeid=itemsin.storedepotid
+                            )
+                            active.save()
+                            itemsin.save()
+                        else:
+                            active = models.Item(
+                                id=1, farmstoreitems = i.farmstoreitems, quantity = i.quantity, parts= i.farmstoreitems.sepparts,
+                                storeid=itemsin.storedepotid
+                            )
+                            active.save()
+                            itemsin.save()
+
             return Response(serializer.data)
         else:
             return Response(
@@ -334,6 +366,40 @@ class ClientOrderDetailView(APIView):
 
         context = {'clientorder':clientorder,'clientitem':clientitem}
         return render(request, 'index.html', context)
+
+
+class ClientOrderIdView(APIView):
+    """API view for send client order id, to know is order received"""
+    serializer_class = serializers.ClientOrderIdSerializer
+    def post(self, request):
+        """Send id of client order to change status"""
+        serializer = serializers.ClientOrderIdSerializer(data=request.data)
+        if serializer.is_valid():
+            saved_data = serializer.save()
+            clientorder = models.ClientOrder.objects.get(id=saved_data.clientorderid.id)
+            order = models.ClientOrderItem.objects.filter(transactionid=clientorder.id)
+
+            if clientorder and order:
+                for i in order:
+                    activeitems = models.Item.objects.filter(farmstoreitems=i.farmstoreitems.id)
+                    if activeitems:
+                        for j in activeitems:
+                            j.quantity = (j.quantity - i.quantity) - (i.sepparts/j.parts)
+                            print("i Sepparts", i.sepparts)
+                            print("j Sepparts", j.parts)
+                            print("Delete", i.sepparts/j.parts)
+                            j.parts = j.parts - i.sepparts
+                            print("i quantity", i.quantity)
+                            j.save()
+                            clientorder.status = True
+                            clientorder.save()
+                            return Response({"Success":True})
+                    else:
+                        return Response({"Success":False})
+        else:
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST)
 
 
 class ReportView(APIView):

@@ -1,5 +1,4 @@
 from django.contrib import admin
-
 # Register your models here.
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -38,4 +37,5 @@ admin.site.register(models.StoreOrder)
 admin.site.register(models.ClientOrder)
 admin.site.register(models.ClientOrderItem)
 admin.site.register(models.FarmStoreItems)
-
+admin.site.register(models.OrderReceived)
+admin.site.register(models.OrderReceivedClient)
