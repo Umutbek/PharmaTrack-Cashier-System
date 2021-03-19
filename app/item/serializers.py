@@ -31,6 +31,17 @@ class FarmStoreItemsSerializer(serializers.ModelSerializer):
         )
 
 
+class GetFarmStoreItemsSerializer(serializers.ModelSerializer):
+    """Serializer for farmstoreitems Item"""
+    id = serializers.IntegerField(required=False)
+
+    class Meta:
+        model = models.FarmStoreItems
+        fields = (
+            'id', 'globalitem', 'seria', 'sepparts', 'deadline', 'cost'
+        )
+        depth=1
+
 
 class AddStoreItemSerializer(serializers.ModelSerializer):
     """Serializer for adding item to store"""

@@ -78,7 +78,7 @@ class FarmStoreItemsView(APIView, PaginationHandlerMixin):
     def get(self, request):
         """Return list of clinet order"""
         farmstoreitems = models.FarmStoreItems.objects.all()
-        serializer = serializers.FarmStoreItemsSerializer(farmstoreitems, many=True)
+        serializer = serializers.GetFarmStoreItemsSerializer(farmstoreitems, many=True)
         return Response(serializer.data)
 
     def post(self, request):
