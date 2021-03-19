@@ -92,9 +92,11 @@ class CashierLogin(models.Model):
 class Category(models.Model):
     """Model for category"""
     name = models.CharField(max_length=200)
-    storeid = models.ForeignKey(User, on_delete=models.CASCADE, related_name="store", null=True)
     totalCost = models.FloatField(default=0)
     totalQuantity = models.FloatField(default=0)
+
+    def __str__(self):
+        return self.name
 
 
 class GlobalItem(models.Model):
