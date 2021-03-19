@@ -275,19 +275,19 @@ class OrderIdView(APIView):
 
             if itemsin and order:
                 for i in order:
-                    activeitems = models.Item.objects.filter(farmstoreitems=i.farmstoreitems.id) & models.Item.objects.filter(storeid__type=1)
-                    if activeitems:
-                        for j in activeitems:
-                            j.quantity = j.quantity + i.quantity
-                            j.parts = j.parts + i.farmstoreitems.sepparts
-                            j.save()
+                    check = models.Item.objects.all()
+                    if check:
+                        activeitems = models.Item.objects.filter(farmstoreitems=i.farmstoreitems.id) & models.Item.objects.filter(storeid__type=1)
+                        if activeitems:
+                            for j in activeitems:
+                                j.quantity = j.quantity + i.quantity
+                                j.parts = j.parts + i.farmstoreitems.sepparts
+                                j.save()
+                                itemsin.status = True
+                                itemsin.save()
+                                break
+                        else:
                             itemsin.status = True
-                            itemsin.save()
-                            break
-                    else:
-                        itemsin.status = True
-                        check = models.Item.objects.all()
-                        if check:
                             max = models.Item.objects.all().order_by("-id")[0]
                             active = models.Item(
                                 id=max.id+1, farmstoreitems = i.farmstoreitems, quantity = i.quantity, parts= i.farmstoreitems.sepparts,
@@ -295,13 +295,14 @@ class OrderIdView(APIView):
                             )
                             active.save()
                             itemsin.save()
-                        else:
-                            active = models.Item(
-                                id=1, farmstoreitems = i.farmstoreitems, quantity = i.quantity, parts= i.farmstoreitems.sepparts,
-                                storeid=itemsin.storedepotid
-                            )
-                            active.save()
-                            itemsin.save()
+
+                    else:
+                        active = models.Item(
+                            id=1, farmstoreitems=i.farmstoreitems, quantity=i.quantity, parts=i.farmstoreitems.sepparts,
+                            storeid=itemsin.storedepotid
+                        )
+                        active.save()
+                        itemsin.save()
 
             return Response(serializer.data)
         else:
