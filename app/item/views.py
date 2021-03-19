@@ -386,11 +386,7 @@ class ClientOrderIdView(APIView):
                     if activeitems:
                         for j in activeitems:
                             j.quantity = (j.quantity - i.quantity) - (i.sepparts/j.parts)
-                            print("i Sepparts", i.sepparts)
-                            print("j Sepparts", j.parts)
-                            print("Delete", i.sepparts/j.parts)
                             j.parts = j.parts - i.sepparts
-                            print("i quantity", i.quantity)
                             j.save()
                             clientorder.status = True
                             clientorder.save()
