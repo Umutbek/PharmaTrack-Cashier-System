@@ -127,9 +127,9 @@ class Item(models.Model):
     """Model for Active Items"""
     farmstoreitems = models.ForeignKey(FarmStoreItems, on_delete=models.CASCADE, null=True)
     quantity = models.FloatField(null=True, blank=True)
-    parts = models.FloatField(null=True, blank=True)
     costsale= models.FloatField(null=True, blank=True)
     issale = models.BooleanField(default=False, null=True)
+    parts = models.FloatField(null=True, blank=True)
     totalcost = models.FloatField(null=True, blank=True)
     storeid = models.ForeignKey(User, on_delete=models.CASCADE, related_name="activestore", null=True)
 
