@@ -63,7 +63,7 @@ class ItemSerializer(serializers.ModelSerializer):
             'costsale', 'issale', 'totalcost', 'storeid'
         )
         read_only_fields = ('id',)
-        depth=1
+        depth=2
 
 
 class ItemPostSerializer(serializers.ModelSerializer):
