@@ -36,12 +36,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     """Model for Regular account"""
 
     choice = (
-        (1, "store"),
-        (2, "depot"),
+        (1, 1),
+        (2, 2),
     )
 
     login = models.CharField(max_length=200, unique=True)
-    type = models.CharField(max_length=200, choices=choice, null=True)
+    type = models.IntegerField()
     name = models.CharField(max_length=200, null=True)
     address = models.TextField()
     date = models.DateTimeField(auto_now_add=True, null=True)

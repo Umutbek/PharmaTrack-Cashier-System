@@ -63,7 +63,10 @@ class GlobalItemView(APIView, PaginationHandlerMixin):
         """Create new itemglobal"""
         serializer = serializers.GlobalItemSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            saved_data = serializer.save()
+            globalitem = models.GlobalItem.all().order_by("id")[0]
+            saved_data.id = globalitem.id+1
+            saved_data.save()
             return Response(serializer.data)
         else:
             return Response(
