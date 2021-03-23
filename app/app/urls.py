@@ -19,7 +19,7 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/user/', include('user.urls')),
-    path('api/item/', include('item.urls')),
+    path('myapps/venv/admin/', admin.site.urls),
+    path('myapps/venv/api/user/', include('user.urls')),
+    path('myapps/venv/api/item/', include('item.urls')),
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
