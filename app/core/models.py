@@ -35,12 +35,12 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     """Model for Regular account"""
 
-    depot = 1
-    store = 2
+    store = 1
+    depot = 2
 
     choice = (
-        (depot, 'depot'),
-        (store, 'store')
+        (store, 'store'),
+        (depot, 'depot')
     )
 
     login = models.CharField(max_length=200, unique=True)
