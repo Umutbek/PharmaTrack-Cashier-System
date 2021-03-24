@@ -44,7 +44,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
 
     login = models.CharField(max_length=200, unique=True)
-    type = models.CharField(max_length=50, choices=choice, null=True)
+    type = models.CharField(max_length=50, choices=choice, default=1)
     name = models.CharField(max_length=200, null=True)
     address = models.TextField()
     date = models.DateTimeField(auto_now_add=True, null=True)
