@@ -8,11 +8,14 @@ services:
     volumes:
       - ./backend:/usr/src/app/backend
       - static_volume:/usr/src/app/backend/assets
+      - database_volume:/var/lib/postgresql/data:ro
     entrypoint: /usr/src/app/backend/backend-entrypoint.sh
     ports:
       - "8000:8000"
     depends_on:
       - db
+    env_file:
+      - ./backend/.env
   db:
 #    restart: unless-stopped
     image: postgres:11
