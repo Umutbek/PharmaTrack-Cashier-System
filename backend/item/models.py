@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
 from user.models import Cashier
-from item.constants import StoreOrderStatuses
+from item.constants import ClientOrderStatuses
 
 
 User = get_user_model()
@@ -80,11 +80,9 @@ class StoreOrder(models.Model):
     address = models.TextField(null=True, blank=True)
     date_sent = models.DateTimeField(auto_now_add=True)
     date_received = models.DateTimeField(null=True)
-    status = models.IntegerField(choices=StoreOrderStatuses.choices, default=StoreOrderStatuses.NEW)
     is_editable = models.BooleanField(default=True)
     total_cost = models.IntegerField(default=0)
     total_cnt = models.IntegerField(default=0)
-    # todo: set statuses
 
 
 class StoreOrderItem(models.Model):
@@ -104,8 +102,10 @@ class ClientOrder(models.Model):
     date_ordered = models.DateTimeField(auto_now_add=True, null=True)
     count_item = models.IntegerField(null=True)
     total_sum = models.FloatField(default=0)
-    status = models.BooleanField(default=False)
+    status = models.IntegerField(choices=ClientOrderStatuses.choices, default=ClientOrderStatuses.NEW)
     # todo: set statuses
+    # todo: update store items quantity on client sale
+
 
 
 class ClientOrderedItem(models.Model):
