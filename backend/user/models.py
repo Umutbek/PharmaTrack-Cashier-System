@@ -24,7 +24,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class Cashier(User):
-    store = models.ForeignKey('item.Store', on_delete=models.CASCADE, null=True, related_name='cashiers')
+    store = models.ForeignKey('item.Store', on_delete=models.CASCADE, related_name='cashiers')
 
 
 class Manager(User):

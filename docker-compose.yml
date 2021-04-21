@@ -8,7 +8,7 @@ services:
     volumes:
       - ./backend:/usr/src/app/backend
       - static_volume:/usr/src/app/backend/assets
-      - database_volume:/var/lib/postgresql/data:ro
+      - database_volume:/var/lib/postgresql/data
     entrypoint: /usr/src/app/backend/backend-entrypoint.sh
     ports:
       - "5100:5100"
@@ -20,7 +20,7 @@ services:
     restart: unless-stopped
     image: postgres:11
     volumes:
-      - database_volume:/var/lib/postgresql/data:ro
+      - database_volume:/var/lib/postgresql/data
     expose:
       - 5432
     environment:
@@ -28,9 +28,9 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "5000:8080"
+      - "5000:80"
     volumes:
-      - ./nginx/dev.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/dev.conf:/etc/nginx/conf.d/default.conf
       - static_volume:/static
     depends_on:
       - backend
