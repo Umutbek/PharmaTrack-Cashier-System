@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
 from user.models import Cashier
+from item.constants import StoreOrderStatuses
 
 
 User = get_user_model()
@@ -79,7 +80,7 @@ class StoreOrder(models.Model):
     address = models.TextField(null=True, blank=True)
     date_sent = models.DateTimeField(auto_now_add=True)
     date_received = models.DateTimeField(null=True)
-    status = models.BooleanField(default=False)
+    status = models.IntegerField(choices=StoreOrderStatuses.choices, default=StoreOrderStatuses.NEW)
     is_editable = models.BooleanField(default=True)
     total_cost = models.IntegerField(default=0)
     total_cnt = models.IntegerField(default=0)

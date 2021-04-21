@@ -9,7 +9,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = os.getenv('DEBUG', False)
 
 ALLOWED_HOSTS = [
-    'cc223c59b46f.ngrok.io',
+    'b8a5fd1a0897.ngrok.io',
     'localhost',
     '127.0.0.1'
 ]

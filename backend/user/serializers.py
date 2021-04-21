@@ -67,7 +67,7 @@ def get_user_context(user):
             active_work_shift = get_active_cashier_work_shift(user.cashier)
         except CashierWorkShift.DoesNotExist:
             active_work_shift = start_work_shift(user.cashier)
-        data['active_work_shift'] = CashierWorkShiftSerializer(active_work_shift).data
+        data['cashier']['date_start'] = active_work_shift.date_start
 
     elif user.manager:
         data['manager'] = ManagerSerializer(user.manager).data

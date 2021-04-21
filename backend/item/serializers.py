@@ -56,6 +56,10 @@ class StoreOrderSerializer(serializers.ModelSerializer):
         depth = 1
         fields = ('id', 'unique_id', 'store_order_items', 'depot', 'store', 'address',
                   'date_sent', 'date_received', 'status', 'is_editable')
+        extra_kwargs = {
+            'date_received': {'read_only': True},
+            'is_editable': {'read_only': True}
+        }
         # todo: date_received should automatically set
         # todo: can't edit if is_editable false
         # todo: determine what status could be

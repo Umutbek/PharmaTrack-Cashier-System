@@ -24,10 +24,11 @@ class GlobalItemFilter(FilterSet):
 class StoreOrderFilter(FilterSet):
     store = filters.CharFilter('store')
     depot = filters.CharFilter('depot')
+    status = filters.NumberFilter('status')
 
     class Meta:
         models = StoreOrder
-        fields = ('store', 'depot')
+        fields = ('store', 'depot', 'status')
 
 
 class StoreOrderItemFilter(FilterSet):

@@ -1,10 +1,12 @@
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from item import serializers
-from item.filters import CategoryFilter, ClientOrderedItemFilter, GlobalItemFilter
+from item.filters import (CategoryFilter, ClientOrderedItemFilter, GlobalItemFilter,
+                          StoreOrderFilter)
 from item.models import (ClientOrderedItem, CashierWorkShift, GlobalItem,
                          Category, ClientOrder, StoreOrder, StoreItem,
                          StoreOrderItem, Store, Depot)
+from item.decorators import check_store_order_status
 from item.serializers import StoreSerializer, DepotSerializer
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.viewsets import ModelViewSet
@@ -42,6 +44,16 @@ class StoreItemView(ModelViewSet):
 class StoreOrderView(ModelViewSet):
     serializer_class = serializers.StoreOrderSerializer
     queryset = StoreOrder.objects.all()
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+    filter_class = StoreOrderFilter
+
+    @check_store_order_status
+    def update(self, request, pk=None):
+        return super(StoreOrderView, self).update(request, pk)
+
+    @check_store_order_status
+    def partial_update(self, request, pk=None):
+        return super(StoreOrderView, self).partial_update(request, pk)
 
 
 class StoreOrderItemView(ModelViewSet):
