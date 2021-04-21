@@ -34,5 +34,9 @@ api_patterns = [
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(api_patterns)),
-    path('', include(swagger_urlpatterns))
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    path('api/', include('rest_framework.urls', namespace='rest_framework')),
+    path('', include(swagger_urlpatterns)),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

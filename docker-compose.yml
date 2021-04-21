@@ -2,7 +2,7 @@ version: "3"
 
 services:
   backend:
-#    restart: unless-stopped
+    restart: unless-stopped
     build: ./backend
     container_name: uygo_backend
     volumes:
@@ -17,7 +17,7 @@ services:
     env_file:
       - ./backend/.env
   db:
-#    restart: unless-stopped
+    restart: unless-stopped
     image: postgres:11
     volumes:
       - database_volume:/var/lib/postgresql/data:ro

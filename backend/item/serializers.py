@@ -21,6 +21,10 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ('id', 'name', 'store', 'total_cost', 'total_quantity')
+        extra_kwargs = {
+            'total_cost': {'read_only': True},
+            'total_quantity': {'read_only': True},
+        }
 
 
 class GlobalItemSerializer(serializers.ModelSerializer):

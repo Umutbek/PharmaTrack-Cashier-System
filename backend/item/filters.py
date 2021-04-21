@@ -4,7 +4,7 @@ from django_filters import rest_framework as filters
 
 
 class CategoryFilter(FilterSet):
-    storeid = filters.CharFilter('store')
+    store = filters.CharFilter('store')
 
     class Meta:
         models = Category
@@ -12,13 +12,13 @@ class CategoryFilter(FilterSet):
 
 
 class GlobalItemFilter(FilterSet):
-    store = filters.CharFilter('store')
-    category = filters.CharFilter('category')
+    name = filters.CharFilter(field_name='name', lookup_expr='icontains')
+    category = filters.NumberFilter('category')
     unique_id = filters.CharFilter('unique_id')
 
     class Meta:
         models = GlobalItem
-        fields = ('store', 'category', 'unique_id')
+        fields = ('name', 'category', 'unique_id')
 
 
 class StoreOrderFilter(FilterSet):
@@ -39,7 +39,7 @@ class StoreOrderItemFilter(FilterSet):
 
 
 class ClientOrderedItemFilter(FilterSet):
-    date_from = filters.DateFilter(field_name="date",lookup_expr='gte')
+    date_from = filters.DateFilter(field_name="date", lookup_expr='gte')
     date_to = filters.DateFilter(field_name="date", lookup_expr='lte')
 
     class Meta:

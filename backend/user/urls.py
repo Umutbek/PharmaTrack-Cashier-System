@@ -11,5 +11,6 @@ router.register(r'managers', views.ManagerViewSet)
 urlpatterns = [
     path('users/login', views.Login.as_view()),
     path('users/logout', views.Logout.as_view()),
+    path('users/current', views.CurrentUser.as_view()),
     path('', include(router.urls)),
 ]

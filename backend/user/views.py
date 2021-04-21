@@ -40,15 +40,18 @@ class Login(TokenObtainPairView):
 class Logout(APIView):
     def post(self, request):
         if request.user.is_anonymous:
-            return Response({'detail': 'User is already anonymous'})
+            return Response({'detail': 'User is already anonymous'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         if request.user.cashier:
             end_work_shift(request.user.cashier)
-        try:
-            request.user.auth_token.delete()
-        except:
-            print('No Auth Token')
         return Response(status=status.HTTP_200_OK)
+
+
+class CurrentUser(APIView):
+    def get(self, request):
+        serializer = CashierSerializer(request.user)
+        return Response(serializer.data)
 
 
 class RefreshUserInfo(TokenRefreshView):

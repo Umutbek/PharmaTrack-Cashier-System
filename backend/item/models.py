@@ -33,6 +33,9 @@ class Category(models.Model):
     total_cost = models.FloatField(default=0)
     total_quantity = models.FloatField(default=0)
 
+    class Meta:
+        ordering = ['total_quantity']
+
 
 class GlobalItem(models.Model):
     """ Здесь хранятся все возможные товары """
@@ -47,18 +50,25 @@ class GlobalItem(models.Model):
     expiration_date = models.DateTimeField()
     price_selling = models.FloatField(null=True)
 
+    class Meta:
+        ordering = ['name']
+
 
 class StoreItem(models.Model):
-    """ Здесь товары относящиеся только одной аптеке"""
+    """ Здесь хранятся товары относящиеся только одной аптеке"""
     global_item = models.ForeignKey(GlobalItem, on_delete=models.CASCADE, null=True)
-    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="items", null=True, )
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="items", null=True, db_index=True)
     quantity = models.FloatField(default=1, validators=[MinValueValidator(1)])
     is_sale = models.BooleanField(default=False)
     parts = models.FloatField(null=True, blank=True)
     total_cost = models.FloatField(null=True, blank=True)
     price_sale = models.FloatField(validators=[MinValueValidator(0)])
     price_received = models.FloatField(null=True, blank=True)
-    # todo: add db indexing by store
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['store', ], name='store_index')
+        ]
 
 
 class StoreOrder(models.Model):
@@ -118,6 +128,7 @@ class CashierWorkShift(models.Model):
     store = models.ForeignKey(Store, on_delete=models.SET_NULL, null=True)
     date_start = models.DateTimeField()
     date_end = models.DateTimeField(null=True)
+    # todo: cashier can have only one date_end=null
 
 
 class Report(models.Model):

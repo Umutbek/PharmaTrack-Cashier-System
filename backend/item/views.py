@@ -1,21 +1,13 @@
-import datetime
-
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
-from item import models
 from item import serializers
-from item.filters import (CategoryFilter, StoreOrderItemFilter, ClientOrderedItemFilter, ClientOrderedItemFilter)
+from item.filters import CategoryFilter, ClientOrderedItemFilter, GlobalItemFilter
 from item.models import (ClientOrderedItem, CashierWorkShift, GlobalItem,
                          Category, ClientOrder, StoreOrder, StoreItem,
                          StoreOrderItem, Store, Depot)
-from item.pagination import PaginationHandlerMixin
-from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.generics import ListAPIView, CreateAPIView, ListCreateAPIView
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet,GenericViewSet
-from rest_framework import mixins
 from item.serializers import StoreSerializer, DepotSerializer
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.viewsets import ModelViewSet
 
 
 class StoreViewSet(ModelViewSet):
@@ -28,41 +20,31 @@ class DepotViewSet(ModelViewSet):
     queryset = Depot.objects.all()
 
 
-class CategoryView(mixins.CreateModelMixin,
-                   mixins.ListModelMixin,
-                   GenericViewSet):
+class CategoryView(ModelViewSet):
     serializer_class = serializers.CategorySerializer
     queryset = Category.objects.all()
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     filter_class = CategoryFilter
 
 
-class GlobalItemView(mixins.CreateModelMixin,
-                     mixins.ListModelMixin,
-                     GenericViewSet,
-                     PaginationHandlerMixin):
+class GlobalItemView(ModelViewSet):
     serializer_class = serializers.GlobalItemSerializer
     queryset = GlobalItem.objects.all()
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+    filter_class = GlobalItemFilter
 
 
-class StoreItemView(mixins.CreateModelMixin,
-                    mixins.ListModelMixin,
-                    GenericViewSet,
-                    PaginationHandlerMixin):
+class StoreItemView(ModelViewSet):
     serializer_class = serializers.StoreItemSerializer
     queryset = StoreItem.objects.all()
 
 
-class StoreOrderView(mixins.CreateModelMixin,
-                     mixins.ListModelMixin,
-                     GenericViewSet):
+class StoreOrderView(ModelViewSet):
     serializer_class = serializers.StoreOrderSerializer
     queryset = StoreOrder.objects.all()
 
 
-class StoreOrderItemView(mixins.CreateModelMixin,
-                         mixins.ListModelMixin,
-                         GenericViewSet):
+class StoreOrderItemView(ModelViewSet):
     serializer_class = serializers.StoreOrderItemSerializer
     queryset = StoreOrderItem.objects.all()
 
@@ -102,17 +84,13 @@ class ClientOrderView(ModelViewSet):
         return render(request, 'client-order.html', context)
 
 
-class ClientOrderedItemView(mixins.CreateModelMixin,
-                            mixins.ListModelMixin,
-                            GenericViewSet):
+class ClientOrderedItemView(ModelViewSet):
     serializer_class = serializers.ClientOrderedItemSerializer
     queryset = ClientOrderedItem.objects.all()
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     filter_class = ClientOrderedItemFilter
 
 
-class CashierWorkShiftView(mixins.CreateModelMixin,
-                           mixins.ListModelMixin,
-                           GenericViewSet):
+class CashierWorkShiftView(ModelViewSet):
     serializer_class = serializers.CashierWorkShiftSerializer
     queryset = CashierWorkShift.objects.all()
