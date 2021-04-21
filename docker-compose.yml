@@ -11,7 +11,7 @@ services:
       - database_volume:/var/lib/postgresql/data:ro
     entrypoint: /usr/src/app/backend/backend-entrypoint.sh
     ports:
-      - "8000:8000"
+      - "5100:5100"
     depends_on:
       - db
     env_file:
