@@ -39,7 +39,6 @@ class StoreItemSerializer(serializers.ModelSerializer):
         model = StoreItem
         fields = ('id', 'global_item', 'quantity', 'parts',
                   'price_sale', 'is_sale', 'total_cost', 'store')
-        depth = 2
 
 
 class StoreOrderItemSerializer(serializers.ModelSerializer):
@@ -49,28 +48,28 @@ class StoreOrderItemSerializer(serializers.ModelSerializer):
 
 
 class StoreOrderSerializer(serializers.ModelSerializer):
-    store_order_items = StoreOrderItemSerializer(many=True, required=False, allow_null=True)
+    store_ordered_items = StoreOrderItemSerializer(many=True)
 
     class Meta:
         model = StoreOrder
-        depth = 1
-        fields = ('id', 'unique_id', 'store_order_items', 'depot', 'store', 'address',
-                  'date_sent', 'date_received', 'status', 'is_editable')
+        fields = ('id', 'unique_id', 'store_ordered_items',
+                  'depot', 'store', 'address',
+                  'date_sent', 'date_received', 'is_editable')
         extra_kwargs = {
             'date_received': {'read_only': True},
-            'is_editable': {'read_only': True}
+            'is_editable': {'read_only': True},
+            'depot': {'required': True},
+            'store': {'required': True}
         }
-        # todo: date_received should automatically set
-        # todo: can't edit if is_editable false
-        # todo: determine what status could be
 
     def create(self, validated_data):
-        store_order_items = validated_data.pop("store_order_items", None)
+        store_ordered_items = validated_data.pop('store_ordered_items')
         store_order = StoreOrder.objects.create(**validated_data)
-
-        for item in store_order_items:
-            StoreOrder.objects.create(store_order=store_order, **item)
+        for item in store_ordered_items:
+            StoreOrderItem.objects.create(store_order=store_order, **item)
         return store_order
+        # todo: date_received should be automatically set
+        # todo: can't edit if is_editable false
 
 
 class ClientOrderedItemSerializer(serializers.ModelSerializer):
@@ -78,7 +77,7 @@ class ClientOrderedItemSerializer(serializers.ModelSerializer):
         model = ClientOrderedItem
         fields = ('id', 'global_item', 'quantity', 'sepparts',
                   'date_ordered', 'cost_one', 'cost_total')
-        read_only_fields = ('id',)
+        read_only_fields = ('id', 'cost_one', 'cost_total')
 
 
 class ClientOrderSerializer(serializers.ModelSerializer):
@@ -88,13 +87,42 @@ class ClientOrderSerializer(serializers.ModelSerializer):
         model = ClientOrder
         fields = ('id', 'client_ordered_items', 'date_ordered', 'cashier',
                   'count_item', 'total_sum')
+        extra_kwargs = {
+            'count_item': {'read_only': True},
+            'total_sum': {'read_only': True},
+        }
+
+    def validate_client_ordered_items(self, items):
+        errors = []
+        for item in items:
+            print(item)
+            global_item = item['global_item']
+            try:
+                store_item = StoreItem.objects.get(global_item=global_item)
+            except StoreItem.DoesNotExist as e:
+                errors.append({'global_item': 'В аптеке нет такого товара!'})
+                continue
+            if store_item.quantity < int(item['quantity']):
+                errors.append({
+                    'global_item': global_item.name,
+                    'quantity': 'В аптеке недостаточное количество товара!'
+                })
+
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        return items
 
     def create(self, validated_data):
         client_ordered_items = validated_data.pop("client_ordered_items", None)
         client_order = ClientOrder.objects.create(**validated_data)
-
-        for item in client_ordered_items:
-            ClientOrderedItem.objects.create(client_order=client_order, **item)
+        print(client_ordered_items)
+        for item_params in client_ordered_items:
+            client_ordered_item = ClientOrderedItem.objects.create(client_order=client_order, **item_params)
+            store_item = StoreItem.objects.get(global_item=client_ordered_item.global_item)
+            store_item.quantity -= client_ordered_item.quantity
+            print(store_item)
+            store_item.save()
 
         return client_order
 

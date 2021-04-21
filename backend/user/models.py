@@ -19,6 +19,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     def fullname(self):
         return '{0} {1}'.format(self.first_name, self.last_name)
 
+    def is_cashier(self):
+        return hasattr(self, 'cashier')
+
+    def is_manager(self):
+        return hasattr(self, 'manager')
+
     def __str__(self):
         return self.fullname
 

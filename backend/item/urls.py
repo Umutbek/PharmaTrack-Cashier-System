@@ -13,6 +13,7 @@ router.register('client-orders', views.ClientOrderView)
 router.register('client-ordered-items', views.ClientOrderedItemView)
 router.register('client-work-shifts', views.CashierWorkShiftView)
 router.register('stores', views.StoreViewSet)
+router.register('depots', views.DepotViewSet)
 
 
 app_name = 'item'

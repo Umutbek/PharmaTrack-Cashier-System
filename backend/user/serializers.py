@@ -61,7 +61,7 @@ class ManagerSerializer(UserSerializer):
 
 def get_user_context(user):
     data = {}
-    if user.cashier:
+    if user.is_cashier():
         data['cashier'] = CashierSerializer(user.cashier).data
         try:
             active_work_shift = get_active_cashier_work_shift(user.cashier)
@@ -69,7 +69,7 @@ def get_user_context(user):
             active_work_shift = start_work_shift(user.cashier)
         data['cashier']['date_start'] = active_work_shift.date_start
 
-    elif user.manager:
+    elif user.is_manager():
         data['manager'] = ManagerSerializer(user.manager).data
 
     else:

@@ -70,6 +70,10 @@ class StoreItem(models.Model):
         indexes = [
             models.Index(fields=['store', ], name='store_index')
         ]
+        constraints = [
+            models.UniqueConstraint(fields=['store', 'global_item'], name='unique_store_global_item')
+        ]
+
 
 
 class StoreOrder(models.Model):
@@ -115,8 +119,8 @@ class ClientOrderedItem(models.Model):
     quantity = models.FloatField(null=True)
     sepparts = models.FloatField(null=True)
     date_ordered = models.DateTimeField(auto_now_add=True, null=True)
-    cost_one = models.FloatField()
-    cost_total = models.FloatField(default=0)
+    cost_one = models.FloatField(default=0)
+    cost_total = models.FloatField(default=0, null=True)
 
 
 class CashierWorkShift(models.Model):
