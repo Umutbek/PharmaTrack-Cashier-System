@@ -62,22 +62,21 @@ class ManagerSerializer(UserSerializer):
 
 def get_user_context(user):
     data = {}
-    user_type = -1  # если тип пользователя неизвестно
     if user.is_cashier():
-        user_type = UserTypes.CASHIER
-        data['cashier'] = CashierSerializer(user.cashier).data
+        user_data = CashierSerializer(user.cashier).data
+        user_data['type'] = UserTypes.CASHIER
         try:
             active_work_shift = get_active_cashier_work_shift(user.cashier)
         except CashierWorkShift.DoesNotExist:
             active_work_shift = start_work_shift(user.cashier)
-        data['cashier']['date_start'] = active_work_shift.date_start
+        user_data['date_start'] = active_work_shift.date_start
     elif user.is_manager():
-        user_type = UserTypes.MANAGER
-        data['manager'] = ManagerSerializer(user.manager).data
+        user_data = ManagerSerializer(user.manager).data
+        user_data['type'] = UserTypes.MANAGER
     else:
-        data['user'] = UserSerializer(user).data
-
-    data['user_type'] = user_type
+        user_data = UserSerializer(user).data
+        user_data['type'] = -1 # неизвестный тип пользователя
+    data['user'] = user_data
 
     return data
 
