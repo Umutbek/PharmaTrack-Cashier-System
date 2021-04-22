@@ -1,18 +1,24 @@
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from item import serializers
+from item.decorators import check_store_order_status
 from item.filters import (CategoryFilter, ClientOrderedItemFilter, GlobalItemFilter,
                           StoreOrderFilter)
 from item.models import (ClientOrderedItem, CashierWorkShift, GlobalItem,
                          Category, ClientOrder, StoreOrder, StoreItem,
                          StoreOrderItem, Store, Depot)
-from item.decorators import check_store_order_status
 from item.serializers import StoreSerializer, DepotSerializer
+from rest_framework import mixins
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, GenericViewSet
 
 
-class StoreViewSet(ModelViewSet):
+class StoreViewSet(mixins.CreateModelMixin,
+                   mixins.RetrieveModelMixin,
+                   mixins.UpdateModelMixin,
+                   mixins.DestroyModelMixin,
+                   mixins.ListModelMixin,
+                   GenericViewSet):
     serializer_class = StoreSerializer
     queryset = Store.objects.all()
 
@@ -76,7 +82,12 @@ class StoreOrderItemView(ModelViewSet):
         return render(request, 'store-order.html', context)
 
 
-class ClientOrderView(ModelViewSet):
+class ClientOrderView(mixins.CreateModelMixin,
+                      mixins.RetrieveModelMixin,
+                      # mixins.UpdateModelMixin,
+                      # mixins.DestroyModelMixin,
+                      mixins.ListModelMixin,
+                      GenericViewSet):
     serializer_class = serializers.ClientOrderSerializer
     queryset = ClientOrder.objects.all()
 
@@ -87,10 +98,10 @@ class ClientOrderView(ModelViewSet):
         for item in client_ordered_items:
             item.cost_total = item.quantity * item.cost_one
             total_sum = total_sum + item.costtotal
-            item.save()
+            # item.save()
         client_order.total_sum = total_sum
         client_order.count_item = len(client_ordered_items)
-        client_order.save()
+        # client_order.save()
 
         context = {'client_order': client_order, 'client_ordered_items': client_ordered_items}
         return render(request, 'client-order.html', context)

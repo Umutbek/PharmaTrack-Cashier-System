@@ -45,6 +45,7 @@ class StoreOrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoreOrderItem
         fields = ('store_order', 'global_item', 'quantity', 'cost_total')
+        read_only_fields = ('store_order', )
 
 
 class StoreOrderSerializer(serializers.ModelSerializer):
@@ -59,7 +60,8 @@ class StoreOrderSerializer(serializers.ModelSerializer):
             'date_received': {'read_only': True},
             'is_editable': {'read_only': True},
             'depot': {'required': True},
-            'store': {'required': True}
+            'store': {'required': True},
+            'unique_id': {'read_only': True}
         }
 
     def create(self, validated_data):
@@ -85,11 +87,12 @@ class ClientOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ClientOrder
-        fields = ('id', 'client_ordered_items', 'date_ordered', 'cashier',
+        fields = ('id', 'unique_id', 'client_ordered_items', 'date_ordered', 'cashier',
                   'count_item', 'total_sum')
         extra_kwargs = {
             'count_item': {'read_only': True},
             'total_sum': {'read_only': True},
+            'unique_id': {'read_only': True}
         }
 
     def validate_client_ordered_items(self, items):
@@ -116,12 +119,10 @@ class ClientOrderSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         client_ordered_items = validated_data.pop("client_ordered_items", None)
         client_order = ClientOrder.objects.create(**validated_data)
-        print(client_ordered_items)
         for item_params in client_ordered_items:
             client_ordered_item = ClientOrderedItem.objects.create(client_order=client_order, **item_params)
             store_item = StoreItem.objects.get(global_item=client_ordered_item.global_item)
             store_item.quantity -= client_ordered_item.quantity
-            print(store_item)
             store_item.save()
 
         return client_order

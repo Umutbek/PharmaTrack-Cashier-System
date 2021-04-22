@@ -75,7 +75,7 @@ def get_user_context(user):
         user_data['type'] = UserTypes.MANAGER
     else:
         user_data = UserSerializer(user).data
-        user_data['type'] = -1 # неизвестный тип пользователя
+        user_data['type'] = -1  # неизвестный тип пользователя
     data['user'] = user_data
 
     return data

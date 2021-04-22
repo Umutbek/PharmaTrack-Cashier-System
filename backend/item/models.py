@@ -1,9 +1,11 @@
+import random
+
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
-from user.models import Cashier
 from item.constants import ClientOrderStatuses
-
+from user.models import Cashier
+from item.utils import generate_random_barcode
 
 User = get_user_model()
 
@@ -41,7 +43,7 @@ class Category(models.Model):
 class GlobalItem(models.Model):
     """ Здесь хранятся все возможные товары """
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
-    unique_id = models.CharField(max_length=200, unique=True)
+    unique_id = models.CharField(max_length=200, null=False, unique=True)
     name = models.CharField(max_length=200)
     producer = models.CharField(max_length=200, null=True, blank=True)
     description = models.TextField()
@@ -75,12 +77,11 @@ class StoreItem(models.Model):
         ]
 
 
-
 class StoreOrder(models.Model):
     """ Чтобы сделать заказ на склад, используйте эту модель"""
     depot = models.ForeignKey(Depot, on_delete=models.SET_NULL, null=True, related_name="depot")
     store = models.ForeignKey(Store, on_delete=models.SET_NULL, null=True, related_name="store")
-    unique_id = models.CharField(max_length=255, null=False, unique=True)
+    unique_id = models.CharField(max_length=255, null=False, unique=True, default=generate_random_barcode)
     address = models.TextField(null=True, blank=True)
     date_sent = models.DateTimeField(auto_now_add=True)
     date_received = models.DateTimeField(null=True)
@@ -102,6 +103,7 @@ class StoreOrderItem(models.Model):
 
 class ClientOrder(models.Model):
     """ Здесь хранятся заказы клиентов """
+    unique_id = models.CharField(max_length=255, null=False, unique=True, default=generate_random_barcode)
     cashier = models.ForeignKey(Cashier, on_delete=models.SET_NULL, null=True, blank=True, related_name='client_orders')
     date_ordered = models.DateTimeField(auto_now_add=True, null=True)
     count_item = models.IntegerField(null=True)
