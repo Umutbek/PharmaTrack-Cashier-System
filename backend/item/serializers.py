@@ -1,8 +1,9 @@
+from rest_framework import serializers
+
 from item.models import (GlobalItem,
                          Category, StoreItem, Store, Depot,
                          StoreOrder, ClientOrderedItem, ClientOrder,
                          CashierWorkShift, Report, StoreOrderItem)
-from rest_framework import serializers
 
 
 class StoreSerializer(serializers.ModelSerializer):
@@ -44,7 +45,7 @@ class StoreItemSerializer(serializers.ModelSerializer):
 class StoreOrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoreOrderItem
-        fields = ('store_order', 'global_item', 'quantity', 'cost_total')
+        fields = ('id', 'store_order', 'global_item', 'quantity', 'cost_total')
         read_only_fields = ('store_order', )
 
 
@@ -53,16 +54,25 @@ class StoreOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StoreOrder
-        fields = ('id', 'unique_id', 'store_ordered_items',
-                  'depot', 'store', 'address',
+        fields = ('id', 'store_ordered_items',
+                  'depot', 'store', 'address', 'next',
                   'date_sent', 'date_received', 'is_editable')
         extra_kwargs = {
             'date_received': {'read_only': True},
             'is_editable': {'read_only': True},
             'depot': {'required': True},
             'store': {'required': True},
-            'unique_id': {'read_only': True}
+            'unique_id': {'read_only': True},
+            'next': {'read_only': True}
         }
+
+    def update(self, instance, validated_data):
+        if instance.next:
+            raise serializers.ValidationError({'next': 'Этот заказ нельзя менять!'})
+        new_store_order = self.create(validated_data)
+        instance.next = new_store_order
+        instance.save()
+        return new_store_order
 
     def create(self, validated_data):
         store_ordered_items = validated_data.pop('store_ordered_items')
@@ -87,7 +97,7 @@ class ClientOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ClientOrder
-        fields = ('id', 'unique_id', 'client_ordered_items', 'date_ordered', 'cashier',
+        fields = ('id', 'client_ordered_items', 'date_ordered', 'cashier',
                   'count_item', 'total_sum')
         extra_kwargs = {
             'count_item': {'read_only': True},

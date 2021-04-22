@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from item import serializers
-from item.decorators import check_store_order_status
+from item.decorators import check_client_order_status
 from item.filters import (CategoryFilter, ClientOrderedItemFilter, GlobalItemFilter,
                           StoreOrderFilter)
 from item.models import (ClientOrderedItem, CashierWorkShift, GlobalItem,
@@ -49,37 +49,16 @@ class StoreItemView(ModelViewSet):
 
 class StoreOrderView(ModelViewSet):
     serializer_class = serializers.StoreOrderSerializer
-    queryset = StoreOrder.objects.all()
+    queryset = StoreOrder.objects.filter(next__isnull=False)
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     filter_class = StoreOrderFilter
 
-    @check_store_order_status
-    def update(self, request, pk=None):
-        return super(StoreOrderView, self).update(request, pk)
 
-    @check_store_order_status
-    def partial_update(self, request, pk=None):
-        return super(StoreOrderView, self).partial_update(request, pk)
-
-
-class StoreOrderItemView(ModelViewSet):
+class StoreOrderItemView(mixins.RetrieveModelMixin,
+                         mixins.ListModelMixin,
+                         GenericViewSet):
     serializer_class = serializers.StoreOrderItemSerializer
     queryset = StoreOrderItem.objects.all()
-
-    def retrieve(self, request, pk=None):
-        store_order = self.get_object()
-        store_order_items = StoreOrderItem.objects.filter(itemin=pk)
-        total_cost = 0
-        for item in store_order_items:
-            item.cost_total = item.quantity * item.cost
-            total_cost = total_cost + item.cost_total
-            item.save()
-        store_order.total_cost = total_cost
-        store_order.total_cnt = len(store_order_items)
-        store_order.save()
-
-        context = {'store_order': store_order, 'store_order_items': store_order_items}
-        return render(request, 'store-order.html', context)
 
 
 class ClientOrderView(mixins.CreateModelMixin,
@@ -90,6 +69,14 @@ class ClientOrderView(mixins.CreateModelMixin,
                       GenericViewSet):
     serializer_class = serializers.ClientOrderSerializer
     queryset = ClientOrder.objects.all()
+
+    @check_client_order_status
+    def update(self, request, pk=None):
+        return super(ClientOrderView, self).update(request, pk)
+
+    @check_client_order_status
+    def partial_update(self, request, pk=None):
+        return super(ClientOrderView, self).partial_update(request, pk)
 
     def retrieve(self, request, pk=None):
         client_order = ClientOrder.objects.get(pk=pk)

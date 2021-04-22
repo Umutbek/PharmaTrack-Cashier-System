@@ -1,11 +1,9 @@
-import random
-
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
+
 from item.constants import ClientOrderStatuses
 from user.models import Cashier
-from item.utils import generate_random_barcode
 
 User = get_user_model()
 
@@ -81,13 +79,11 @@ class StoreOrder(models.Model):
     """ Чтобы сделать заказ на склад, используйте эту модель"""
     depot = models.ForeignKey(Depot, on_delete=models.SET_NULL, null=True, related_name="depot")
     store = models.ForeignKey(Store, on_delete=models.SET_NULL, null=True, related_name="store")
-    unique_id = models.CharField(max_length=255, null=False, unique=True, default=generate_random_barcode)
     address = models.TextField(null=True, blank=True)
     date_sent = models.DateTimeField(auto_now_add=True)
     date_received = models.DateTimeField(null=True)
     is_editable = models.BooleanField(default=True)
-    total_cost = models.IntegerField(default=0)
-    total_cnt = models.IntegerField(default=0)
+    next = models.OneToOneField('self', on_delete=models.CASCADE, blank=True, null=True, related_name='prev')
 
 
 class StoreOrderItem(models.Model):
@@ -103,15 +99,11 @@ class StoreOrderItem(models.Model):
 
 class ClientOrder(models.Model):
     """ Здесь хранятся заказы клиентов """
-    unique_id = models.CharField(max_length=255, null=False, unique=True, default=generate_random_barcode)
     cashier = models.ForeignKey(Cashier, on_delete=models.SET_NULL, null=True, blank=True, related_name='client_orders')
     date_ordered = models.DateTimeField(auto_now_add=True, null=True)
     count_item = models.IntegerField(null=True)
     total_sum = models.FloatField(default=0)
     status = models.IntegerField(choices=ClientOrderStatuses.choices, default=ClientOrderStatuses.NEW)
-    # todo: set statuses
-    # todo: update store items quantity on client sale
-
 
 
 class ClientOrderedItem(models.Model):
