@@ -1,5 +1,6 @@
-from item.models import CashierWorkShift
 from datetime import datetime
+
+from item.models import CashierWorkShift
 
 
 # CashierWorkShift helper methods
@@ -25,7 +26,3 @@ def end_work_shift(cashier):
         return cashier_history
     except CashierWorkShift.DoesNotExist as e:
         return None
-
-
-
-

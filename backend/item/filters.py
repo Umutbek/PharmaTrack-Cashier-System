@@ -1,14 +1,6 @@
-from item.models import (Category, GlobalItem, StoreOrder, ClientOrderedItem, StoreOrderItem)
+from item.models import (Category, GlobalItem, StoreOrder, ClientOrderedItem, StoreOrderItem, StoreItem)
 from django_filters import FilterSet
 from django_filters import rest_framework as filters
-
-
-class CategoryFilter(FilterSet):
-    store = filters.CharFilter('store')
-
-    class Meta:
-        models = Category
-        fields = ('store', )
 
 
 class GlobalItemFilter(FilterSet):
@@ -19,6 +11,14 @@ class GlobalItemFilter(FilterSet):
     class Meta:
         models = GlobalItem
         fields = ('name', 'category', 'unique_id')
+
+
+class StoreItemFilter(FilterSet):
+    store = filters.NumberFilter('store')
+
+    class Meta:
+        models = StoreItem
+        fields = ('store',)
 
 
 class StoreOrderFilter(FilterSet):

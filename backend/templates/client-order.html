@@ -64,7 +64,7 @@
                     <td><p>Дата</p></td>
                     <td><p></p></td>
                     <td><p></p></td>
-                    <td><p>{{ client_order.datetime }}</p></td>
+                    <td><p>{{ client_order.date_ordered }}</p></td>
                 </tr>
 
                 <tr>
@@ -74,7 +74,7 @@
                     <th><p>Сумма</p></th>
                     <br>
                 </tr>
-                {% for item in client_ordered_items %}
+                {% for item in client_order.client_ordered_items.all %}
                     <tr>
                         <td><p>{{ item.global_item.name }}</p></td>
                         <td><p>{{ item.quantity }}</p></td>
@@ -87,14 +87,14 @@
                     <td><p>Всего наименований:</p></td>
                     <td><p></p></td>
                     <td><p></p></td>
-                    <td><p>{{ client_order.countitem }}</p></td>
+                    <td><p>{{ client_order.items_cnt }}</p></td>
                 </tr>
 
                 <tr>
                     <td><p>Итого к оплате:</p></td>
                     <td><p></p></td>
                     <td><p></p></td>
-                    <td><p>{{ client_order.total }}</p></td>
+                    <td><p>{{ client_order.items_sum }}</p></td>
                 </tr>
 
             </table>

@@ -30,7 +30,6 @@ class Depot(StoreAbstract):
 class Category(models.Model):
     """ Категория товара """
     name = models.CharField(max_length=200)
-    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="categories", null=True)
     total_cost = models.FloatField(default=0)
     total_quantity = models.FloatField(default=0)
 
@@ -63,8 +62,6 @@ class StoreItem(models.Model):
     is_sale = models.BooleanField(default=False)
     parts = models.FloatField(null=True, blank=True)
     total_cost = models.FloatField(null=True, blank=True)
-    price_sale = models.FloatField(validators=[MinValueValidator(0)])
-    price_received = models.FloatField(null=True, blank=True)
 
     class Meta:
         indexes = [
@@ -94,27 +91,46 @@ class StoreOrderItem(models.Model):
 
     @property
     def cost_total(self):
-        return self.global_item.cost * self.quantity
+        return self.global_item.price_selling * self.quantity
 
 
 class ClientOrder(models.Model):
     """ Здесь хранятся заказы клиентов """
-    cashier = models.ForeignKey(Cashier, on_delete=models.SET_NULL, null=True, blank=True, related_name='client_orders')
+    cashier = models.ForeignKey(Cashier, on_delete=models.CASCADE, related_name='client_orders')
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='client_orders')
     date_ordered = models.DateTimeField(auto_now_add=True, null=True)
-    count_item = models.IntegerField(null=True)
-    total_sum = models.FloatField(default=0)
     status = models.IntegerField(choices=ClientOrderStatuses.choices, default=ClientOrderStatuses.NEW)
 
+    @property
+    def items_sum(self):
+        return sum([item.cost_total for item in self.client_ordered_items.all()])
+
+    def items_cnt(self):
+        return self.client_ordered_items.count()
 
 class ClientOrderedItem(models.Model):
     """ Товары по каждому заказу клиентов """
-    client_order = models.ForeignKey(ClientOrder, on_delete=models.SET_NULL, null=True, blank=True, related_name='client_ordered_items')
-    global_item = models.ForeignKey(GlobalItem, on_delete=models.SET_NULL, null=True, blank=True, related_name="client_ordered_items")
+    client_order = models.ForeignKey(ClientOrder,
+                                     on_delete=models.SET_NULL,
+                                     null=True,
+                                     blank=True,
+                                     related_name='client_ordered_items')
+    global_item = models.ForeignKey(GlobalItem,
+                                    on_delete=models.SET_NULL,
+                                    null=True,
+                                    blank=True,
+                                    related_name="client_ordered_items")
     quantity = models.FloatField(null=True)
     sepparts = models.FloatField(null=True)
     date_ordered = models.DateTimeField(auto_now_add=True, null=True)
-    cost_one = models.FloatField(default=0)
-    cost_total = models.FloatField(default=0, null=True)
+
+    @property
+    def cost_one(self):
+        return self.global_item.price_selling
+
+    @property
+    def cost_total(self):
+        return self.cost_one * self.quantity
 
 
 class CashierWorkShift(models.Model):
@@ -137,4 +153,3 @@ class Report(models.Model):
     in_total = models.IntegerField(default=0)
     income_total = models.IntegerField(default=0)
     earn_total = models.IntegerField(default=0)
-

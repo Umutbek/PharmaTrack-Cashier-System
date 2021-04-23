@@ -1,16 +1,21 @@
+from datetime import datetime
+
+from django.db import transaction
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import mixins, status
+from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet, GenericViewSet
+
 from item import serializers
-from item.decorators import check_client_order_status
-from item.filters import (CategoryFilter, ClientOrderedItemFilter, GlobalItemFilter,
-                          StoreOrderFilter)
+from item.filters import (ClientOrderedItemFilter, GlobalItemFilter,
+                          StoreOrderFilter, StoreItemFilter)
 from item.models import (ClientOrderedItem, CashierWorkShift, GlobalItem,
                          Category, ClientOrder, StoreOrder, StoreItem,
                          StoreOrderItem, Store, Depot)
-from item.serializers import StoreSerializer, DepotSerializer
-from rest_framework import mixins
-from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.viewsets import ModelViewSet, GenericViewSet
+from item.serializers import StoreSerializer, DepotSerializer, StoreItemSerializer
 
 
 class StoreViewSet(mixins.CreateModelMixin,
@@ -31,8 +36,6 @@ class DepotViewSet(ModelViewSet):
 class CategoryView(ModelViewSet):
     serializer_class = serializers.CategorySerializer
     queryset = Category.objects.all()
-    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
-    filter_class = CategoryFilter
 
 
 class GlobalItemView(ModelViewSet):
@@ -45,13 +48,63 @@ class GlobalItemView(ModelViewSet):
 class StoreItemView(ModelViewSet):
     serializer_class = serializers.StoreItemSerializer
     queryset = StoreItem.objects.all()
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+    filter_class = StoreItemFilter
 
 
 class StoreOrderView(ModelViewSet):
     serializer_class = serializers.StoreOrderSerializer
-    queryset = StoreOrder.objects.filter(next__isnull=False)
+    queryset = StoreOrder.objects.filter(next__isnull=True)
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
     filter_class = StoreOrderFilter
+
+    @action(detail=True, methods=['GET'])
+    def as_html(self, request, pk=None):
+        store_order = StoreOrder.objects.filter(pk=pk).prefetch_related('store_ordered_items').first()
+        return render(request, 'store-order.html', {'store_order': store_order})
+
+    @transaction.atomic
+    @action(detail=True, methods=['UPDATE'])
+    def confirm(self, request, pk=None):
+        store_order = self.get_object()
+
+        store_ordered_items = store_order.store_ordered_items.all()
+        updated_items, created_items = [], []
+        added_items_qt = 0
+        for item in store_ordered_items:
+            try:
+                store_item = StoreItem.objects.get(store=store_order.store,
+                                                   global_item=item.global_item)
+                updated_items.append(store_item)
+            except StoreItem.DoesNotExist:
+                store_item = StoreItem.objects.create(
+                    store=store_order.store,
+                    global_item=item.global_item,
+                    quantity=0,
+                    price_sale=item.global_item.price_selling
+                )
+                created_items.append(store_item)
+            store_item.quantity += item.quantity
+            added_items_qt += item.quantity
+            store_item.save()
+
+        actual_items_qt = sum(store_ordered_items.values_list('quantity', flat=True))
+        if added_items_qt != actual_items_qt:
+            return Response({
+                'added_items_qt': added_items_qt,
+                'actual_items_qt': actual_items_qt,
+                'detail': 'Что-то пошло не так. Не все товары были добавлены.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        store_order.date_received = datetime.now()
+        store_order.is_editable = False
+        store_order.save()
+        return Response({
+            'detail': 'Отлично! Все товары были добавлены',
+            'updated_items': StoreItemSerializer(updated_items, many=True).data,
+            'created_items': StoreItemSerializer(created_items, many=True).data,
+            'added_items_qt': added_items_qt
+        }, status=status.HTTP_202_ACCEPTED)
 
 
 class StoreOrderItemView(mixins.RetrieveModelMixin,
@@ -70,28 +123,10 @@ class ClientOrderView(mixins.CreateModelMixin,
     serializer_class = serializers.ClientOrderSerializer
     queryset = ClientOrder.objects.all()
 
-    @check_client_order_status
-    def update(self, request, pk=None):
-        return super(ClientOrderView, self).update(request, pk)
-
-    @check_client_order_status
-    def partial_update(self, request, pk=None):
-        return super(ClientOrderView, self).partial_update(request, pk)
-
-    def retrieve(self, request, pk=None):
-        client_order = ClientOrder.objects.get(pk=pk)
-        client_ordered_items = client_order.client_ordered_items.all()
-        total_sum = 0
-        for item in client_ordered_items:
-            item.cost_total = item.quantity * item.cost_one
-            total_sum = total_sum + item.costtotal
-            # item.save()
-        client_order.total_sum = total_sum
-        client_order.count_item = len(client_ordered_items)
-        # client_order.save()
-
-        context = {'client_order': client_order, 'client_ordered_items': client_ordered_items}
-        return render(request, 'client-order.html', context)
+    @action(detail=True, methods=['GET'])
+    def as_html(self, request, pk=None):
+        client_order = ClientOrder.objects.filter(pk=pk).prefetch_related('client_ordered_items').first()
+        return render(request, 'client-order.html', {'client_order': client_order})
 
 
 class ClientOrderedItemView(ModelViewSet):

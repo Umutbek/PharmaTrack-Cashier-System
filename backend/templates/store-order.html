@@ -80,7 +80,7 @@
                     <th><p>Сумма</p></th>
                     <br>
                 </tr>
-                {% for item in store_order_items %}
+                {% for item in store_order.store_ordered_items.all %}
                     <tr>
                         <td><p>{{ item.global_item.name }}</p></td>
                         <td><p>{{ item.quantity }}</p></td>
@@ -112,14 +112,14 @@
 
             </table>
             <br><br>
-            <div class="img-container">
-                <img id='barcode'
-                     src="https://api.qrserver.com/v1/create-qr-code/?data={{ store_order.unique_id }}&amp;size=100x100"
-                     alt=""
-                     title="HELLO"
-                     width="50"
-                     height="50"/>
-            </div>
+{#            <div class="img-container">#}
+{#                <img id='barcode'#}
+{#                     src="https://api.qrserver.com/v1/create-qr-code/?data={{ store_order.unique_id }}&amp;size=100x100"#}
+{#                     alt=""#}
+{#                     title="HELLO"#}
+{#                     width="50"#}
+{#                     height="50"/>#}
+{#            </div>#}
         </div>
     </div>
 </div>
