@@ -24,12 +24,7 @@ class DepotSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ('id', 'name', 'total_cost', 'total_quantity')
-        extra_kwargs = {
-            'total_cost': {'read_only': True},
-            'total_quantity': {'read_only': True},
-        }
-
+        fields = ('id', 'name')
 
 class GlobalItemSerializer(serializers.ModelSerializer):
     class Meta:
