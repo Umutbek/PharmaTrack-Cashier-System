@@ -3,7 +3,6 @@ from django.dispatch import receiver
 from celery import shared_task
 from item.models import GlobalItem, Store, StoreItem
 
-
 @shared_task
 @receiver(post_save, sender=GlobalItem)
 def create_item_in_all_stores(sender, instance, **kwargs):
