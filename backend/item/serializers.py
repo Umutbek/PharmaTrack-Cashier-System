@@ -26,6 +26,7 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = ('id', 'name')
 
+
 class GlobalItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = GlobalItem
