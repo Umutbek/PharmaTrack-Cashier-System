@@ -11,7 +11,7 @@ router.register('store-orders', views.StoreOrderView)
 router.register('store-ordered-items', views.StoreOrderItemView)
 router.register('client-orders', views.ClientOrderView)
 router.register('client-ordered-items', views.ClientOrderedItemView)
-router.register('client-work-shifts', views.CashierWorkShiftView)
+router.register('cashier-work-shifts', views.CashierWorkShiftView)
 router.register('stores', views.StoreViewSet)
 router.register('depots', views.DepotViewSet)
 

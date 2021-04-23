@@ -39,10 +39,11 @@ class GlobalItemSerializer(serializers.ModelSerializer):
 
 
 class StoreItemSerializer(serializers.ModelSerializer):
+    global_item = GlobalItemSerializer()
     class Meta:
         model = StoreItem
-        fields = ('id', 'global_item', 'quantity', 'parts',
-                  'is_sale', 'total_cost', 'store')
+        fields = ('id', 'global_item', 'quantity', 'parts', 'is_sale', 'store')
+        read_only_fields = ('global_item', 'store')
 
 
 class StoreOrderItemSerializer(serializers.ModelSerializer):

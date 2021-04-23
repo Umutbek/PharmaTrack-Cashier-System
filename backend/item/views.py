@@ -45,7 +45,10 @@ class GlobalItemView(ModelViewSet):
     filter_class = GlobalItemFilter
 
 
-class StoreItemView(ModelViewSet):
+class StoreItemView(mixins.RetrieveModelMixin,
+                    mixins.UpdateModelMixin,
+                    mixins.ListModelMixin,
+                    GenericViewSet):
     serializer_class = serializers.StoreItemSerializer
     queryset = StoreItem.objects.all()
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)

@@ -30,11 +30,6 @@ class Depot(StoreAbstract):
 class Category(models.Model):
     """ Категория товара """
     name = models.CharField(max_length=200)
-    total_cost = models.FloatField(default=0)
-    total_quantity = models.FloatField(default=0)
-
-    class Meta:
-        ordering = ['total_quantity']
 
 
 class GlobalItem(models.Model):
@@ -58,10 +53,9 @@ class StoreItem(models.Model):
     """ Здесь хранятся товары относящиеся только одной аптеке"""
     global_item = models.ForeignKey(GlobalItem, on_delete=models.CASCADE, null=True)
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="items", null=True, db_index=True)
-    quantity = models.FloatField(default=1, validators=[MinValueValidator(1)])
+    quantity = models.FloatField(default=0, validators=[MinValueValidator(0)])
     is_sale = models.BooleanField(default=False)
     parts = models.FloatField(null=True, blank=True)
-    total_cost = models.FloatField(null=True, blank=True)
 
     class Meta:
         indexes = [
