@@ -9,6 +9,7 @@ click==7.1.2
 click-didyoumean==0.0.3
 click-plugins==1.1.1
 click-repl==0.1.6
+colorlog==5.0.1
 coreapi==2.3.3
 coreschema==0.0.4
 cryptography==3.0
