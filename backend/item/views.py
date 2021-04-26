@@ -109,6 +109,12 @@ class StoreOrderView(ModelViewSet):
             'added_items_qt': added_items_qt
         }, status=status.HTTP_202_ACCEPTED)
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return self.as_html(request, serializer.data.get('id'))
+
 
 class StoreOrderItemView(mixins.RetrieveModelMixin,
                          mixins.ListModelMixin,

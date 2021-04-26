@@ -84,7 +84,7 @@
                     <tr>
                         <td><p>{{ item.global_item.name }}</p></td>
                         <td><p>{{ item.quantity }}</p></td>
-                        <td><p>{{ item.cost }}</p></td>
+                        <td><p>{{ item.cost_one }}</p></td>
                         <td><p>{{ item.cost_total }}</p></td>
                     </tr>
                 {% endfor %}
@@ -93,21 +93,21 @@
                     <th><p>Итого:</p></th>
                     <th><p></p></th>
                     <th><p></p></th>
-                    <th><p></p></th>
+                    <th><p>{{ store_order.ordered_items_sum }}</p></th>
                 </tr>
 
                 <tr>
                     <td><p>Всего наименований:</p></td>
                     <td><p></p></td>
                     <td><p></p></td>
-                    <td><p>{{ store_order.total_cnt }}</p></td>
+                    <td><p>{{ store_order.ordered_items_cnt }}</p></td>
                 </tr>
 
                 <tr>
                     <td><p>Итого к оплате:</p></td>
                     <td><p></p></td>
                     <td><p></p></td>
-                    <td><p>{{ store_order.total_cost }}</p></td>
+                    <td><p>{{ store_order.total }}</p></td>
                 </tr>
 
             </table>

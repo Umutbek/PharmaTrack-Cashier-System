@@ -76,6 +76,19 @@ class StoreOrder(models.Model):
     is_editable = models.BooleanField(default=True)
     next = models.OneToOneField('self', on_delete=models.CASCADE, blank=True, null=True, related_name='prev')
 
+    @property
+    def ordered_items_sum(self):
+        return sum([item.cost_total for item in self.store_ordered_items.all()])
+
+    @property
+    def ordered_items_cnt(self):
+        return self.store_ordered_items.count()
+
+    @property
+    def total(self):
+        return self.ordered_items_sum
+        # todo: добавить скидку для пенсионеров
+
 
 class StoreOrderItem(models.Model):
     """ Товары и их количество для заказа на склад"""
@@ -84,8 +97,13 @@ class StoreOrderItem(models.Model):
     quantity = models.IntegerField(null=True, blank=True)
 
     @property
+    def cost_one(self):
+        return self.global_item.price_selling
+
+    @property
     def cost_total(self):
-        return self.global_item.price_selling * self.quantity
+        return self.cost_one * self.quantity
+
 
 
 class ClientOrder(models.Model):
