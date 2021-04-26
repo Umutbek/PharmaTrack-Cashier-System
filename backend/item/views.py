@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from django.db import transaction
@@ -11,13 +12,11 @@ from rest_framework.viewsets import ModelViewSet, GenericViewSet
 
 from item import serializers
 from item.filters import (ClientOrderedItemFilter, GlobalItemFilter,
-                          StoreOrderFilter, StoreItemFilter)
+                          StoreOrderFilter)
 from item.models import (ClientOrderedItem, CashierWorkShift, GlobalItem,
                          Category, ClientOrder, StoreOrder, StoreItem,
                          StoreOrderItem, Store, Depot)
 from item.serializers import StoreSerializer, DepotSerializer, StoreItemSerializer
-import logging
-
 
 logger = logging.getLogger(__name__)
 
@@ -55,8 +54,11 @@ class StoreItemView(mixins.RetrieveModelMixin,
                     GenericViewSet):
     serializer_class = serializers.StoreItemSerializer
     queryset = StoreItem.objects.all()
-    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
-    filter_class = StoreItemFilter
+    lookup_field = 'global_item__unique_id'
+
+    def get_queryset(self):
+        store_id = self.kwargs.get('storeId', None)
+        return StoreItem.objects.filter(store=store_id)
 
 
 class StoreOrderView(ModelViewSet):

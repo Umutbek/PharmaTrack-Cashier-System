@@ -6,8 +6,8 @@ from item.models import GlobalItem, Store, StoreItem
 
 @shared_task
 @receiver(post_save, sender=GlobalItem)
-def create_item_in_all_stores(sender, instance, **kwargs):
-    if not instance.pk:
+def create_item_in_all_stores(sender, instance, created, **kwargs):
+    if created:
         for store in Store.objects.all():
             StoreItem.objects.create(global_item=instance, store=store)
 
@@ -21,8 +21,8 @@ def delete_item_in_all_stores(sender, instance, **kwargs):
 
 @shared_task
 @receiver(post_save, sender=Store)
-def create_store_items_when_store_created(sender, instance, **kwargs):
-    if not instance.pk:
+def create_store_items_when_store_created(sender, instance, created, **kwargs):
+    if created:
         for item in GlobalItem.objects.all():
             StoreItem.objects.create(global_item=item, store=instance)
 

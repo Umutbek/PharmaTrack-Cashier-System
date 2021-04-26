@@ -13,15 +13,6 @@ class GlobalItemFilter(FilterSet):
         fields = ('name', 'category', 'unique_id')
 
 
-class StoreItemFilter(FilterSet):
-    store = filters.NumberFilter('store')
-    unique_id = filters.CharFilter('global_item__unique_id')
-
-    class Meta:
-        models = StoreItem
-        fields = ('store', 'unique_id')
-
-
 class StoreOrderFilter(FilterSet):
     store = filters.CharFilter('store')
     depot = filters.CharFilter('depot')
