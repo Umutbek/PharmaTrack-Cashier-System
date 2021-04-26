@@ -9,13 +9,14 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = os.getenv('DEBUG', False)
-
 ALLOWED_HOSTS = [
     '159.65.125.72',
     'b8a5fd1a0897.ngrok.io',
     'localhost',
     '127.0.0.1'
 ]
+
+ADMINS = [('Eldar', 'eldar.djorobekov@gmail.com')]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -170,21 +171,27 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'colored'
         },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'include_html': True,
+        }
     },
     'loggers': {
         'root': {
-            'handlers': ['console'],
-            'level': 'WARNING',
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True
         },
         'django': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
             'propagate': True,
         },
         'django.db.backends': {
             'handlers': ['console'],
             'level': 'DEBUG',
-            'propagate': True
+            'propagate': False
         },
         'item': {
             'handlers': ['file', 'console'],
@@ -198,6 +205,14 @@ LOGGING = {
         }
     }
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = 587
+
 CELERY_TIMEZONE = "Asia/Bishkek"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60

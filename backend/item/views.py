@@ -67,11 +67,6 @@ class StoreOrderView(ModelViewSet):
 
     @action(detail=True, methods=['GET'])
     def as_html(self, request, pk=None):
-        logger.error('printing!')
-        logger.warning('printing!')
-        logger.info('printing!')
-        logger.debug('printing!')
-        logger.critical('printing!')
         store_order = StoreOrder.objects.filter(pk=pk).prefetch_related('store_ordered_items').first()
         return render(request, 'store-order.html', {'store_order': store_order})
 
