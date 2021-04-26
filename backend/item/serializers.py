@@ -48,8 +48,8 @@ class StoreItemSerializer(serializers.ModelSerializer):
 class StoreOrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoreOrderItem
-        fields = ('id', 'store_order', 'global_item', 'quantity', 'cost_total')
-        read_only_fields = ('store_order', )
+        fields = ('id', 'store_order', 'global_item', 'quantity', 'num_pieces', 'cost_total')
+        read_only_fields = ('store_order',)
 
 
 class StoreOrderSerializer(serializers.ModelSerializer):
@@ -60,8 +60,9 @@ class StoreOrderSerializer(serializers.ModelSerializer):
         fields = ('id', 'store_ordered_items',
                   'depot', 'store', 'address',
                   'date_sent', 'date_received', 'is_editable', 'status')
-        read_only_fields = ('date_received', 'is_editable',
-                            'depot', 'store', 'unique_id', 'status')
+        read_only_fields = ('date_received', 'is_editable', 'unique_id', 'status')
+        extra_kwargs = {'depot': {'required': True},
+                        'store': {'required': True}}
 
     def update(self, instance, validated_data):
         if instance.status == StoreOrderStatuses.DELIVERED:
