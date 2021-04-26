@@ -1,8 +1,10 @@
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
+from django_fsm import FSMIntegerField, transition
 
-from item.constants import ClientOrderStatuses
+
+from item.constants import ClientOrderStatuses, StoreOrderStatuses
 from user.models import Cashier
 
 User = get_user_model()
@@ -41,9 +43,9 @@ class GlobalItem(models.Model):
     description = models.TextField()
     image = models.ImageField(upload_to='global-items/', default='global-items/default.png')
     series = models.CharField(max_length=200, null=True)
-    sepparts = models.FloatField(null=True)
     expiration_date = models.DateTimeField()
     price_selling = models.FloatField(null=True)
+    max_num_pieces = models.IntegerField(default=1, null=False)
 
     class Meta:
         ordering = ['name']
@@ -53,9 +55,14 @@ class StoreItem(models.Model):
     """ Здесь хранятся товары относящиеся только одной аптеке"""
     global_item = models.ForeignKey(GlobalItem, on_delete=models.CASCADE, null=True)
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="items", null=True, db_index=True)
-    quantity = models.FloatField(default=0, validators=[MinValueValidator(0)])
+    quantity = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+    num_pieces = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     is_sale = models.BooleanField(default=False)
     parts = models.FloatField(null=True, blank=True)
+
+    @property
+    def total_num_pieces(self):
+        return self.quantity * self.global_item.max_num_pieces + self.num_pieces
 
     class Meta:
         indexes = [
@@ -74,7 +81,15 @@ class StoreOrder(models.Model):
     date_sent = models.DateTimeField(auto_now_add=True)
     date_received = models.DateTimeField(null=True)
     is_editable = models.BooleanField(default=True)
-    next = models.OneToOneField('self', on_delete=models.CASCADE, blank=True, null=True, related_name='prev')
+    status = FSMIntegerField(choices=StoreOrderStatuses.choices, default=StoreOrderStatuses.NEW)
+
+    @transition(field=status, source=[StoreOrderStatuses.NEW, StoreOrderStatuses.SENT], target=StoreOrderStatuses.SENT)
+    def send(self):
+        pass
+
+    @transition(field=status, source=[StoreOrderStatuses.SENT], target=StoreOrderStatuses.DELIVERED)
+    def deliver(self):
+        pass
 
     @property
     def ordered_items_sum(self):
@@ -94,7 +109,12 @@ class StoreOrderItem(models.Model):
     """ Товары и их количество для заказа на склад"""
     store_order = models.ForeignKey(StoreOrder, on_delete=models.CASCADE, related_name="store_ordered_items", null=True)
     global_item = models.ForeignKey(GlobalItem, on_delete=models.CASCADE, related_name="store_ordered_items", null=True)
-    quantity = models.IntegerField(null=True, blank=True)
+    quantity = models.IntegerField(validators=[MinValueValidator(1)])
+    num_pieces = models.IntegerField(validators=[MinValueValidator(0)])
+
+    @property
+    def total_num_pieces(self):
+        return self.quantity * self.global_item.max_num_pieces + self.num_pieces
 
     @property
     def cost_one(self):
@@ -102,8 +122,7 @@ class StoreOrderItem(models.Model):
 
     @property
     def cost_total(self):
-        return self.cost_one * self.quantity
-
+        return self.cost_one * (self.total_num_pieces / self.global_item.max_num_pieces)
 
 
 class ClientOrder(models.Model):
@@ -111,7 +130,7 @@ class ClientOrder(models.Model):
     cashier = models.ForeignKey(Cashier, on_delete=models.CASCADE, related_name='client_orders')
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='client_orders')
     date_ordered = models.DateTimeField(auto_now_add=True, null=True)
-    status = models.IntegerField(choices=ClientOrderStatuses.choices, default=ClientOrderStatuses.NEW)
+    status = models.IntegerField(choices=StoreOrderStatuses.choices, default=StoreOrderStatuses.NEW)
 
     @property
     def items_sum(self):
@@ -119,6 +138,7 @@ class ClientOrder(models.Model):
 
     def items_cnt(self):
         return self.client_ordered_items.count()
+
 
 class ClientOrderedItem(models.Model):
     """ Товары по каждому заказу клиентов """

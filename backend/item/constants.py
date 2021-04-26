@@ -7,3 +7,9 @@ class ClientOrderStatuses(models.IntegerChoices):
     ON_THE_WAY = 3, 'В пути'
     COMPLETED = 4, 'Завершенные'
     DECLINED = 5, 'Отказано'
+
+
+class StoreOrderStatuses(models.IntegerChoices):
+    NEW = 1, 'Новый'
+    SENT = 2, 'Отгружено'
+    DELIVERED = 3, 'Доставлено'

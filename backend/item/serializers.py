@@ -8,6 +8,8 @@ from item.models import (GlobalItem,
                          StoreOrder, ClientOrderedItem, ClientOrder,
                          CashierWorkShift, Report, StoreOrderItem)
 
+from item.constants import StoreOrderStatuses
+
 
 class StoreSerializer(serializers.ModelSerializer):
     class Meta:
@@ -31,14 +33,15 @@ class GlobalItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = GlobalItem
         fields = ('id', 'unique_id', 'name', 'producer', 'category', 'image',
-                  'description', 'series', 'sepparts', 'expiration_date', 'price_selling')
+                  'description', 'series', 'max_num_pieces', 'expiration_date', 'price_selling')
 
 
 class StoreItemSerializer(serializers.ModelSerializer):
     global_item = GlobalItemSerializer()
+
     class Meta:
         model = StoreItem
-        fields = ('id', 'global_item', 'quantity', 'parts', 'is_sale', 'store')
+        fields = ('id', 'global_item', 'quantity', 'num_pieces', 'parts', 'is_sale', 'store')
         read_only_fields = ('global_item', 'store')
 
 
@@ -55,25 +58,16 @@ class StoreOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoreOrder
         fields = ('id', 'store_ordered_items',
-                  'depot', 'store', 'address', 'next',
-                  'date_sent', 'date_received', 'is_editable')
-        extra_kwargs = {
-            'date_received': {'read_only': True},
-            'is_editable': {'read_only': True},
-            'depot': {'required': True},
-            'store': {'required': True},
-            'unique_id': {'read_only': True},
-            'next': {'read_only': True}
-        }
+                  'depot', 'store', 'address',
+                  'date_sent', 'date_received', 'is_editable', 'status')
+        read_only_fields = ('date_received', 'is_editable',
+                            'depot', 'store', 'unique_id', 'status')
 
     def update(self, instance, validated_data):
-        if instance.next or not instance.is_editable:
-            raise serializers.ValidationError({'next': 'Этот заказ нельзя менять!'})
-        new_store_order = self.create(validated_data)
-        instance.next = new_store_order
-        instance.is_editable = False
-        instance.save()
-        return new_store_order
+        if instance.status == StoreOrderStatuses.DELIVERED:
+            raise serializers.ValidationError({'status': 'Этот заказ нельзя менять!'})
+        # todo: save history of updates
+        return instance
 
     @transaction.atomic
     def create(self, validated_data):
@@ -118,7 +112,8 @@ class ClientOrderSerializer(serializers.ModelSerializer):
             except StoreItem.DoesNotExist:
                 errors.append({'global_item': 'В аптеке нет такого товара!'})
                 continue
-            if store_item.quantity < int(item['quantity']):
+
+            if store.total_num_pieces < item['quantity']:
                 errors.append({
                     'global_item': global_item.name,
                     'quantity': 'В аптеке недостаточное количество товара!'

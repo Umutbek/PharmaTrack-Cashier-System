@@ -13,6 +13,15 @@ class GlobalItemFilter(FilterSet):
         fields = ('name', 'category', 'unique_id')
 
 
+class StoreItemFilter(FilterSet):
+    name = filters.CharFilter(field_name='global_item__name', lookup_expr='icontains')
+
+    class Meta:
+        models = GlobalItem
+        fields = ('name',)
+
+
+
 class StoreOrderFilter(FilterSet):
     store = filters.CharFilter('store')
     depot = filters.CharFilter('depot')
