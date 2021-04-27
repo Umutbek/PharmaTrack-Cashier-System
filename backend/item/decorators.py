@@ -1,4 +1,4 @@
-from item.constants import ClientOrderStatuses
+from item.utils import ClientOrderStatuses
 from rest_framework.response import Response
 from rest_framework import status
 

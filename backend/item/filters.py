@@ -1,6 +1,7 @@
-from item.models import (Category, GlobalItem, StoreOrder, ClientOrderedItem, StoreOrderItem, StoreItem)
 from django_filters import FilterSet
 from django_filters import rest_framework as filters
+
+from item.models import (GlobalItem, StoreOrder, ClientOrderedItem, StoreOrderItem)
 
 
 class GlobalItemFilter(FilterSet):

@@ -87,14 +87,21 @@
                     <td><p>Всего наименований:</p></td>
                     <td><p></p></td>
                     <td><p></p></td>
-                    <td><p>{{ client_order.items_cnt }}</p></td>
+                    <td><p>{{ client_order.ordered_items_cnt }}</p></td>
+                </tr>
+
+                <tr>
+                    <td><p>Скидка: </p></td>
+                    <td><p></p></td>
+                    <td><p></p></td>
+                    <td><p>{{ client_order.discount_price }}</p></td>
                 </tr>
 
                 <tr>
                     <td><p>Итого к оплате:</p></td>
                     <td><p></p></td>
                     <td><p></p></td>
-                    <td><p>{{ client_order.items_sum }}</p></td>
+                    <td><p>{{ client_order.total }}</p></td>
                 </tr>
 
             </table>

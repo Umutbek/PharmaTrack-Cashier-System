@@ -13,3 +13,18 @@ class StoreOrderStatuses(models.IntegerChoices):
     NEW = 1, 'Новый'
     SENT = 2, 'Отгружено'
     DELIVERED = 3, 'Доставлено'
+
+
+class ClientTypes(models.IntegerChoices):
+    REGULAR = 0, 'Обычный'
+    PENSIONER = 1, 'Пенсионер'
+
+
+def get_discounted_price(price, client=None):
+    if not client:
+        return price
+
+    if ClientTypes.PENSIONER == client.type:
+        return price * 0.1
+    else:
+        return price

@@ -1,18 +1,21 @@
-from item.serializers import CashierWorkShiftSerializer
-from item.services import end_work_shift
-from item.services import get_active_cashier_work_shift
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import (TokenObtainPairView,
                                             TokenRefreshView)
-from user.models import Cashier, Manager
+from user.filters import ClientFilter
+from item.serializers import CashierWorkShiftSerializer
+from item.services import end_work_shift
+from item.services import get_active_cashier_work_shift
+from user.models import Cashier, Manager, Client
 from user.serializers import (CashierSerializer, ManagerSerializer,
                               TokenObtainPairWithUserInfoSerializer,
-                              TokenRefreshWithUserInfoSerializer)
+                              TokenRefreshWithUserInfoSerializer, ClientSerializer)
 
 
 class CashierViewSet(viewsets.ModelViewSet):
@@ -30,6 +33,13 @@ class CashierViewSet(viewsets.ModelViewSet):
 class ManagerViewSet(viewsets.ModelViewSet):
     serializer_class = ManagerSerializer
     queryset = Manager.objects.all()
+
+
+class ClientViewSet(viewsets.ModelViewSet):
+    serializer_class = ClientSerializer
+    queryset = Client.objects.all()
+    filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)
+    filter_class = ClientFilter
 
 
 class Login(TokenObtainPairView):

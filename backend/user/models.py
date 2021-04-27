@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import (AbstractBaseUser,
                                         BaseUserManager,
                                         PermissionsMixin)
+
+from item.utils import ClientTypes
 from user.managers import UserManager
 
 
@@ -41,3 +43,11 @@ class Client(models.Model):
     first_name = models.CharField(max_length=200)
     last_name = models.CharField(max_length=200)
     phone = models.CharField(max_length=20)
+    pension_book = models.CharField(max_length=200)
+
+    type = models.IntegerField(choices=ClientTypes.choices, default=ClientTypes.REGULAR)
+
+    def save(self, *args, **kwargs):
+        if self.pension_book and len(self.pension_book) > 0:
+            self.type = ClientTypes.PENSIONER
+        return super(Client, self).save(*args, **kwargs)

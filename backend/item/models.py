@@ -7,7 +7,7 @@ from django.core.validators import MinValueValidator
 from django.db import models, transaction
 from django_fsm import FSMIntegerField, transition
 
-from item.constants import StoreOrderStatuses
+from item.utils import StoreOrderStatuses, get_discounted_price
 from user.models import Cashier
 
 logger = logging.getLogger(__name__)
@@ -140,8 +140,11 @@ class ClientOrder(models.Model):
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='client_orders')
     date_ordered = models.DateTimeField(auto_now_add=True, null=True)
     status = models.IntegerField(choices=StoreOrderStatuses.choices, default=StoreOrderStatuses.NEW)
-
-    # todo: добавить скидку для пенсионеров
+    client = models.ForeignKey('user.Client',
+                               on_delete=models.SET_NULL,
+                               null=True,
+                               blank=True,
+                               related_name='orders')
 
     @transaction.atomic
     def save_changes_in_store(self):
@@ -164,8 +167,17 @@ class ClientOrder(models.Model):
     def ordered_items_sum(self):
         return sum([item.cost_total for item in self.client_ordered_items.all()])
 
+    @property
     def ordered_items_cnt(self):
         return self.client_ordered_items.count()
+
+    @property
+    def discount_price(self):
+        return get_discounted_price(self.ordered_items_sum, self.client)
+
+    @property
+    def total(self):
+        return self.ordered_items_sum - self.discount_price
 
 
 class OrderItem(models.Model):
@@ -186,7 +198,6 @@ class OrderItem(models.Model):
         return self.cost_one * (self.total_num_pieces / self.global_item.max_num_pieces)
 
     def save(self, *args, **kwargs):
-        logger.error('Some')
         t = self.total_num_pieces
         self.quantity = t // self.global_item.max_num_pieces
         self.num_pieces = t % self.global_item.max_num_pieces

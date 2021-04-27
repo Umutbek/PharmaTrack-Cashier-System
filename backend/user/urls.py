@@ -7,6 +7,7 @@ app_name = 'user'
 router = DefaultRouter()
 router.register(r'cashiers', views.CashierViewSet)
 router.register(r'managers', views.ManagerViewSet)
+router.register(r'clients', views.ClientViewSet)
 
 urlpatterns = [
     path('users/login/', views.Login.as_view()),

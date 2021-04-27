@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 
 from item import serializers
-from item.constants import StoreOrderStatuses
+from item.utils import StoreOrderStatuses
 from item.filters import (ClientOrderedItemFilter, GlobalItemFilter,
                           StoreOrderFilter, StoreItemFilter)
 from item.models import (ClientOrderedItem, CashierWorkShift, GlobalItem,

@@ -4,7 +4,7 @@ from rest_framework.exceptions import ValidationError, AuthenticationFailed
 from rest_framework_simplejwt.serializers import (TokenObtainPairSerializer,
                                                   TokenRefreshSerializer)
 from rest_framework_simplejwt.state import token_backend
-from user.models import Cashier, Manager
+from user.models import Cashier, Manager, Client
 from item.services import (start_work_shift,
                            get_active_cashier_work_shift)
 from item.models import CashierWorkShift
@@ -78,6 +78,13 @@ def get_user_context(user):
     data['user'] = user_data
 
     return data
+
+
+class ClientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Client
+        fields = ('first_name', 'last_name', 'phone', 'pension_book', 'type')
+        read_only_fields = ('type',)
 
 
 class TokenObtainPairWithUserInfoSerializer(TokenObtainPairSerializer):

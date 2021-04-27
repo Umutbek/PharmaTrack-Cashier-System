@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime
 
-from django.core.exceptions import ValidationError
 from django.db import transaction
 from rest_framework import serializers
 
@@ -123,7 +122,7 @@ class ClientOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ClientOrder
-        fields = ('id', 'client_ordered_items', 'date_ordered',
+        fields = ('id', 'client_ordered_items', 'date_ordered', 'client', 'discount_price',
                   'cashier', 'store', 'ordered_items_cnt', 'ordered_items_sum')
         read_only_fields = ('unique_id', 'store')
 
