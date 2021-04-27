@@ -1,10 +1,11 @@
+from datetime import datetime
+
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
-from django.db import models
+from django.db import models, transaction
 from django_fsm import FSMIntegerField, transition
 
-
-from item.constants import ClientOrderStatuses, StoreOrderStatuses
+from item.constants import StoreOrderStatuses
 from user.models import Cashier
 
 User = get_user_model()
@@ -58,7 +59,6 @@ class StoreItem(models.Model):
     quantity = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     num_pieces = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     is_sale = models.BooleanField(default=False)
-    parts = models.FloatField(null=True, blank=True)
 
     @property
     def total_num_pieces(self):
@@ -73,15 +73,28 @@ class StoreItem(models.Model):
         ]
 
 
+class StoreOrderHistory(models.Model):
+    store_order = models.ForeignKey('StoreOrder', on_delete=models.SET_NULL, null=True, related_name='history')
+    store_order_data = models.JSONField(null=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    # todo: make read only after save
+
+    class Meta:
+        ordering = ('store_order', 'created_at')
+
+
 class StoreOrder(models.Model):
     """ Чтобы сделать заказ на склад, используйте эту модель"""
     depot = models.ForeignKey(Depot, on_delete=models.SET_NULL, null=True, related_name="depot")
     store = models.ForeignKey(Store, on_delete=models.SET_NULL, null=True, related_name="store")
     address = models.TextField(null=True, blank=True)
-    date_sent = models.DateTimeField(auto_now_add=True)
-    date_received = models.DateTimeField(null=True)
-    is_editable = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    delivered_at = models.DateTimeField(null=True)
     status = FSMIntegerField(choices=StoreOrderStatuses.choices, default=StoreOrderStatuses.NEW)
+
+    @transition(field=status, source=[StoreOrderStatuses.NEW, StoreOrderStatuses.SENT], target=StoreOrderStatuses.NEW)
+    def update_new(self):
+        pass
 
     @transition(field=status, source=[StoreOrderStatuses.NEW, StoreOrderStatuses.SENT], target=StoreOrderStatuses.SENT)
     def send(self):
@@ -89,7 +102,8 @@ class StoreOrder(models.Model):
 
     @transition(field=status, source=[StoreOrderStatuses.SENT], target=StoreOrderStatuses.DELIVERED)
     def deliver(self):
-        pass
+        self.date_received = datetime.now()
+        self.save_delivered_items()
 
     @property
     def ordered_items_sum(self):
@@ -103,6 +117,17 @@ class StoreOrder(models.Model):
     def total(self):
         return self.ordered_items_sum
         # todo: добавить скидку для пенсионеров
+
+    @transaction.atomic
+    def save_delivered_items(self):
+        # сохранить все доставленные товары
+        for item in self.store_ordered_items.all():
+            store_item = StoreItem.objects.get(store=self.store,
+                                               global_item=item.global_item)
+            total_num_pieces = store_item.total_num_pieces + item.total_num_pieces
+            store_item.quantity = total_num_pieces // store_item.global_item.max_num_pieces
+            store_item.num_pieces = total_num_pieces % store_item.global_item.max_num_pieces
+            store_item.save()
 
 
 class StoreOrderItem(models.Model):

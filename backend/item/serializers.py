@@ -1,14 +1,15 @@
+import logging
 from datetime import datetime
 
 from django.db import transaction
 from rest_framework import serializers
 
-from item.models import (GlobalItem,
+from item.models import (GlobalItem, StoreOrderHistory,
                          Category, StoreItem, Store, Depot,
                          StoreOrder, ClientOrderedItem, ClientOrder,
                          CashierWorkShift, Report, StoreOrderItem)
 
-from item.constants import StoreOrderStatuses
+logger = logging.getLogger(__name__)
 
 
 class StoreSerializer(serializers.ModelSerializer):
@@ -41,15 +42,20 @@ class StoreItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StoreItem
-        fields = ('id', 'global_item', 'quantity', 'num_pieces', 'parts', 'is_sale', 'store')
+        fields = ('id', 'global_item', 'quantity', 'num_pieces', 'is_sale', 'store')
         read_only_fields = ('global_item', 'store')
 
 
 class StoreOrderItemSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = StoreOrderItem
         fields = ('id', 'store_order', 'global_item', 'quantity', 'num_pieces', 'cost_total')
         read_only_fields = ('store_order',)
+
+
+class StoreOrderItemSerializerExtended(StoreItemSerializer):
+    global_item = GlobalItemSerializer()
 
 
 class StoreOrderSerializer(serializers.ModelSerializer):
@@ -59,26 +65,48 @@ class StoreOrderSerializer(serializers.ModelSerializer):
         model = StoreOrder
         fields = ('id', 'store_ordered_items',
                   'depot', 'store', 'address',
-                  'date_sent', 'date_received', 'is_editable', 'status')
-        read_only_fields = ('date_received', 'is_editable', 'unique_id', 'status')
+                  'created_at', 'delivered_at', 'status')
+        read_only_fields = ('unique_id',)
         extra_kwargs = {'depot': {'required': True},
                         'store': {'required': True}}
 
+    @transaction.atomic
     def update(self, instance, validated_data):
-        if instance.status == StoreOrderStatuses.DELIVERED:
-            raise serializers.ValidationError({'status': 'Этот заказ нельзя менять!'})
-        # todo: save history of updates
+        store_ordered_items = validated_data.get('store_ordered_items')
+        instance.depot = validated_data.get('depot', instance.depot)
+        instance.store = validated_data.get('store', instance.store)
+        instance.address = validated_data.get('address', instance.address)
+        instance.status = validated_data.get('status', instance.status)
+
+        # проверяем, есть ли товары.
+        # например, если вызывается метод PATCH
+        if store_ordered_items:
+            # удаляем все старые товары
+            instance.store_ordered_items.all().delete()
+            # добавляем обновленные товары
+            for item in store_ordered_items:
+                StoreOrderItem.objects.create(store_order=instance, **item)
+
+        instance.save()
         return instance
 
     @transaction.atomic
     def create(self, validated_data):
         store_ordered_items = validated_data.pop('store_ordered_items')
-        store_order = StoreOrder.objects.create(**validated_data)
+        instance = StoreOrder.objects.create(**validated_data)
         for item in store_ordered_items:
-            StoreOrderItem.objects.create(store_order=store_order, **item)
-        return store_order
-        # todo: date_received should be automatically set
-        # todo: can't edit if is_editable false
+            StoreOrderItem.objects.create(store_order=instance, **item)
+        return instance
+
+
+class StoreOrderSerializerExtended(StoreOrderSerializer):
+    store_ordered_items = StoreOrderItemSerializerExtended(many=True)
+
+
+class StoreOrderHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StoreOrderHistory
+        fields = ('store_order_data', 'created_at')
 
 
 class ClientOrderedItemSerializer(serializers.ModelSerializer):

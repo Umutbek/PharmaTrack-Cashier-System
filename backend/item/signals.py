@@ -1,7 +1,8 @@
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from celery import shared_task
-from item.models import GlobalItem, Store, StoreItem
+from item.models import GlobalItem, Store, StoreItem, StoreOrderHistory, StoreOrder
+from item.serializers import StoreOrderSerializerExtended
 
 
 @shared_task
@@ -32,3 +33,10 @@ def create_store_items_when_store_created(sender, instance, created, **kwargs):
 def delete_store_items_when_store_deleted(sender, instance, **kwargs):
     for item in StoreItem.objects.filter(store=instance):
         item.delete()
+
+
+@shared_task
+@receiver(post_save, sender=StoreOrder)
+def save_store_order_history(sender, instance, **kwargs):
+    StoreOrderHistory.objects.create(store_order=instance,
+                                     store_order_data=StoreOrderSerializerExtended(instance).data)
