@@ -170,8 +170,8 @@ class ClientOrder(models.Model):
 
 class OrderItem(models.Model):
     global_item = models.ForeignKey(GlobalItem, on_delete=models.CASCADE, null=True)
-    quantity = models.IntegerField(validators=[MinValueValidator(0)])
-    num_pieces = models.IntegerField(validators=[MinValueValidator(0)])
+    quantity = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+    num_pieces = models.IntegerField(default=0, validators=[MinValueValidator(0)])
 
     @property
     def total_num_pieces(self):
