@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from django.contrib.auth import get_user_model
@@ -9,6 +10,7 @@ from django_fsm import FSMIntegerField, transition
 from item.constants import StoreOrderStatuses
 from user.models import Cashier
 
+logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
@@ -78,6 +80,7 @@ class StoreOrderHistory(models.Model):
     store_order = models.ForeignKey('StoreOrder', on_delete=models.SET_NULL, null=True, related_name='history')
     store_order_data = models.JSONField(null=False)
     created_at = models.DateTimeField(auto_now_add=True)
+
     # todo: make read only after save
 
     class Meta:
@@ -137,6 +140,7 @@ class ClientOrder(models.Model):
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='client_orders')
     date_ordered = models.DateTimeField(auto_now_add=True, null=True)
     status = models.IntegerField(choices=StoreOrderStatuses.choices, default=StoreOrderStatuses.NEW)
+
     # todo: добавить скидку для пенсионеров
 
     @transaction.atomic
@@ -180,6 +184,13 @@ class OrderItem(models.Model):
     @property
     def cost_total(self):
         return self.cost_one * (self.total_num_pieces / self.global_item.max_num_pieces)
+
+    def save(self, *args, **kwargs):
+        logger.error('Some')
+        t = self.total_num_pieces
+        self.quantity = t // self.global_item.max_num_pieces
+        self.num_pieces = t % self.global_item.max_num_pieces
+        return super(OrderItem, self).save(*args, **kwargs)
 
     class Meta:
         abstract = True
