@@ -50,7 +50,7 @@ class StoreItemSerializer(serializers.ModelSerializer):
 class StoreOrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoreOrderItem
-        fields = ('id', 'store_order', 'global_item', 'quantity', 'num_pieces', 'cost_total')
+        fields = ('id', 'store_order', 'global_item', 'quantity', 'num_pieces', 'cost_one', 'cost_total')
         read_only_fields = ('store_order',)
 
 
@@ -65,7 +65,8 @@ class StoreOrderSerializer(serializers.ModelSerializer):
         model = StoreOrder
         fields = ('id', 'store_ordered_items',
                   'depot', 'store', 'address',
-                  'created_at', 'delivered_at', 'status')
+                  'created_at', 'delivered_at', 'status',
+                  'ordered_items_sum', 'ordered_items_cnt')
         read_only_fields = ('unique_id', 'delivered_at')
         extra_kwargs = {'depot': {'required': True},
                         'store': {'required': True}}
