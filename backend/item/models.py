@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models, transaction
 from django_fsm import FSMIntegerField, transition
@@ -92,19 +93,6 @@ class StoreOrder(models.Model):
     delivered_at = models.DateTimeField(null=True)
     status = FSMIntegerField(choices=StoreOrderStatuses.choices, default=StoreOrderStatuses.NEW)
 
-    @transition(field=status, source=[StoreOrderStatuses.NEW, StoreOrderStatuses.SENT], target=StoreOrderStatuses.NEW)
-    def update_new(self):
-        pass
-
-    @transition(field=status, source=[StoreOrderStatuses.NEW, StoreOrderStatuses.SENT], target=StoreOrderStatuses.SENT)
-    def send(self):
-        pass
-
-    @transition(field=status, source=[StoreOrderStatuses.SENT], target=StoreOrderStatuses.DELIVERED)
-    def deliver(self):
-        self.date_received = datetime.now()
-        self.save_delivered_items()
-
     @property
     def ordered_items_sum(self):
         return sum([item.cost_total for item in self.store_ordered_items.all()])
@@ -116,7 +104,20 @@ class StoreOrder(models.Model):
     @property
     def total(self):
         return self.ordered_items_sum
-        # todo: добавить скидку для пенсионеров
+
+    @transition(field=status, source=[StoreOrderStatuses.NEW, StoreOrderStatuses.SENT], target=StoreOrderStatuses.NEW)
+    def update_new(self):
+        pass
+
+    @transition(field=status, source=[StoreOrderStatuses.NEW, StoreOrderStatuses.SENT], target=StoreOrderStatuses.SENT)
+    def send(self):
+        pass
+
+    @transition(field=status, source=[StoreOrderStatuses.SENT], target=StoreOrderStatuses.DELIVERED)
+    def deliver(self):
+        self.save_delivered_items()
+        self.delivered_at = datetime.now()
+        self.save()
 
     @transaction.atomic
     def save_delivered_items(self):
@@ -130,11 +131,42 @@ class StoreOrder(models.Model):
             store_item.save()
 
 
-class StoreOrderItem(models.Model):
-    """ Товары и их количество для заказа на склад"""
-    store_order = models.ForeignKey(StoreOrder, on_delete=models.CASCADE, related_name="store_ordered_items", null=True)
-    global_item = models.ForeignKey(GlobalItem, on_delete=models.CASCADE, related_name="store_ordered_items", null=True)
-    quantity = models.IntegerField(validators=[MinValueValidator(1)])
+class ClientOrder(models.Model):
+    """ Здесь хранятся заказы клиентов """
+    cashier = models.ForeignKey(Cashier, on_delete=models.CASCADE, related_name='client_orders')
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='client_orders')
+    date_ordered = models.DateTimeField(auto_now_add=True, null=True)
+    status = models.IntegerField(choices=StoreOrderStatuses.choices, default=StoreOrderStatuses.NEW)
+    # todo: добавить скидку для пенсионеров
+
+    @transaction.atomic
+    def save_changes_in_store(self):
+        errors = []
+        for item in self.client_ordered_items.all():
+            store_item = StoreItem.objects.get(store=self.store,
+                                               global_item=item.global_item)
+            if store_item.total_num_pieces < item.total_num_pieces:
+                errors.append({'item': item,
+                               'detail': "В аптеке недостаточное количество штук данного товара!"})
+                continue
+            total_num_pieces = store_item.total_num_pieces - item.total_num_pieces
+            store_item.quantity = total_num_pieces // store_item.global_item.max_num_pieces
+            store_item.num_pieces = total_num_pieces % store_item.global_item.max_num_pieces
+            store_item.save()
+        if errors:
+            raise ValidationError(errors)
+
+    @property
+    def ordered_items_sum(self):
+        return sum([item.cost_total for item in self.client_ordered_items.all()])
+
+    def ordered_items_cnt(self):
+        return self.client_ordered_items.count()
+
+
+class OrderItem(models.Model):
+    global_item = models.ForeignKey(GlobalItem, on_delete=models.CASCADE, null=True)
+    quantity = models.IntegerField(validators=[MinValueValidator(0)])
     num_pieces = models.IntegerField(validators=[MinValueValidator(0)])
 
     @property
@@ -149,45 +181,22 @@ class StoreOrderItem(models.Model):
     def cost_total(self):
         return self.cost_one * (self.total_num_pieces / self.global_item.max_num_pieces)
 
-
-class ClientOrder(models.Model):
-    """ Здесь хранятся заказы клиентов """
-    cashier = models.ForeignKey(Cashier, on_delete=models.CASCADE, related_name='client_orders')
-    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='client_orders')
-    date_ordered = models.DateTimeField(auto_now_add=True, null=True)
-    status = models.IntegerField(choices=StoreOrderStatuses.choices, default=StoreOrderStatuses.NEW)
-
-    @property
-    def items_sum(self):
-        return sum([item.cost_total for item in self.client_ordered_items.all()])
-
-    def items_cnt(self):
-        return self.client_ordered_items.count()
+    class Meta:
+        abstract = True
 
 
-class ClientOrderedItem(models.Model):
+class StoreOrderItem(OrderItem):
+    """ Товары и их количество для заказа на склад"""
+    store_order = models.ForeignKey(StoreOrder, on_delete=models.CASCADE, related_name="store_ordered_items", null=True)
+
+
+class ClientOrderedItem(OrderItem):
     """ Товары по каждому заказу клиентов """
     client_order = models.ForeignKey(ClientOrder,
                                      on_delete=models.SET_NULL,
                                      null=True,
                                      blank=True,
                                      related_name='client_ordered_items')
-    global_item = models.ForeignKey(GlobalItem,
-                                    on_delete=models.SET_NULL,
-                                    null=True,
-                                    blank=True,
-                                    related_name="client_ordered_items")
-    quantity = models.FloatField(null=True)
-    sepparts = models.FloatField(null=True)
-    date_ordered = models.DateTimeField(auto_now_add=True, null=True)
-
-    @property
-    def cost_one(self):
-        return self.global_item.price_selling
-
-    @property
-    def cost_total(self):
-        return self.cost_one * self.quantity
 
 
 class CashierWorkShift(models.Model):

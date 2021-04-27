@@ -1,5 +1,6 @@
 import logging
 
+from django.db import transaction
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from django_fsm import TransitionNotAllowed
@@ -137,8 +138,6 @@ class StoreOrderItemView(mixins.RetrieveModelMixin,
 
 class ClientOrderView(mixins.CreateModelMixin,
                       mixins.RetrieveModelMixin,
-                      # mixins.UpdateModelMixin,
-                      # mixins.DestroyModelMixin,
                       mixins.ListModelMixin,
                       GenericViewSet):
     serializer_class = serializers.ClientOrderSerializer
@@ -150,7 +149,9 @@ class ClientOrderView(mixins.CreateModelMixin,
         return render(request, 'client-order.html', {'client_order': client_order})
 
 
-class ClientOrderedItemView(ModelViewSet):
+class ClientOrderedItemView(mixins.RetrieveModelMixin,
+                            mixins.ListModelMixin,
+                            GenericViewSet):
     serializer_class = serializers.ClientOrderedItemSerializer
     queryset = ClientOrderedItem.objects.all()
     filter_backends = (DjangoFilterBackend, SearchFilter, OrderingFilter)

@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from rest_framework import serializers
 
@@ -47,7 +48,6 @@ class StoreItemSerializer(serializers.ModelSerializer):
 
 
 class StoreOrderItemSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = StoreOrderItem
         fields = ('id', 'store_order', 'global_item', 'quantity', 'num_pieces', 'cost_total')
@@ -66,7 +66,7 @@ class StoreOrderSerializer(serializers.ModelSerializer):
         fields = ('id', 'store_ordered_items',
                   'depot', 'store', 'address',
                   'created_at', 'delivered_at', 'status')
-        read_only_fields = ('unique_id',)
+        read_only_fields = ('unique_id', 'delivered_at')
         extra_kwargs = {'depot': {'required': True},
                         'store': {'required': True}}
 
@@ -112,8 +112,8 @@ class StoreOrderHistorySerializer(serializers.ModelSerializer):
 class ClientOrderedItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientOrderedItem
-        fields = ('id', 'global_item', 'quantity', 'sepparts',
-                  'date_ordered', 'cost_one', 'cost_total')
+        fields = ('id', 'global_item', 'quantity',
+                  'num_pieces', 'cost_one', 'cost_total')
         read_only_fields = ('id', 'cost_one', 'cost_total')
 
 
@@ -123,45 +123,43 @@ class ClientOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientOrder
         fields = ('id', 'client_ordered_items', 'date_ordered',
-                  'cashier', 'store', 'items_cnt', 'items_sum')
-        extra_kwargs = {
-            'items_cnt': {'read_only': True},
-            'items_sum': {'read_only': True},
-            'unique_id': {'read_only': True},
-            'store': {'read_only': True}
-        }
+                  'cashier', 'store', 'ordered_items_cnt', 'ordered_items_sum')
+        read_only_fields = ('unique_id', 'store')
 
     def validate(self, data):
-        store = data.get('cashier').store
+        validated_data = super(ClientOrderSerializer, self).validate(data)
+        client_ordered_items = validated_data.get("client_ordered_items")
+        # store = validated_data.get('cashier').store
+        store = 1
         errors = []
-        for item in data.get('client_ordered_items'):
-            global_item = item.get('global_item')
-            try:
-                store_item = StoreItem.objects.get(global_item=global_item, store=store)
-            except StoreItem.DoesNotExist:
-                errors.append({'global_item': 'В аптеке нет такого товара!'})
-                continue
+        for item_data in client_ordered_items:
+            global_item = item_data.get('global_item')
+            store_item = StoreItem.objects.get(store=store, global_item=global_item)
 
-            if store.total_num_pieces < item['quantity']:
+            qt = int(item_data.get('quantity'))
+            num_pieces = int(item_data.get('num_pieces'))
+            client_item_total_num_pieces = qt * global_item.max_num_pieces + num_pieces
+
+            if store_item.total_num_pieces < client_item_total_num_pieces:
                 errors.append({
-                    'global_item': global_item.name,
-                    'quantity': 'В аптеке недостаточное количество товара!'
+                    'global_item': global_item.id,
+                    'quantity': 'В аптеке недостаточное количество товаров!'
                 })
         if errors:
-            raise serializers.ValidationError(errors)
+            raise serializers.ValidationError({'client_ordered_items': errors})
         return data
 
+    @transaction.atomic
     def create(self, validated_data):
         client_ordered_items = validated_data.pop("client_ordered_items", None)
-        client_order = ClientOrder.objects.create(**validated_data,
-                                                  store=validated_data.get('cashier').store,
-                                                  date_ordered=datetime.now())
+        instance = ClientOrder.objects.create(**validated_data,
+                                              store=validated_data.get('cashier').store,
+                                              date_ordered=datetime.now())
         for item_params in client_ordered_items:
-            client_ordered_item = ClientOrderedItem.objects.create(client_order=client_order, **item_params)
-            store_item = StoreItem.objects.get(global_item=client_ordered_item.global_item)
-            store_item.quantity -= client_ordered_item.quantity
-            store_item.save()
-        return client_order
+            ClientOrderedItem.objects.create(client_order=instance, **item_params)
+        instance.save()
+        instance.save_changes_in_store()
+        return instance
 
 
 class ReportSerializer(serializers.ModelSerializer):

@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, AuthenticationFailed
 from rest_framework_simplejwt.serializers import (TokenObtainPairSerializer,
                                                   TokenRefreshSerializer)
 from rest_framework_simplejwt.state import token_backend
@@ -74,8 +74,7 @@ def get_user_context(user):
         user_data = ManagerSerializer(user.manager).data
         user_data['type'] = UserTypes.MANAGER
     else:
-        user_data = UserSerializer(user).data
-        user_data['type'] = -1  # неизвестный тип пользователя
+        raise AuthenticationFailed()
     data['user'] = user_data
 
     return data
@@ -96,8 +95,5 @@ class TokenRefreshWithUserInfoSerializer(TokenRefreshSerializer):
         data = super().validate(attrs)
         decoded_payload = token_backend.decode(data['access'], verify=True)
         user = User.objects.get(id=decoded_payload['user_id'])
-        data = {**data, **get_user_context(self.user)}
+        data = {**data, **get_user_context(user)}
         return data
-
-
-
