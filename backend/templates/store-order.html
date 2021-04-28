@@ -1,0 +1,127 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Заказы</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script type="text/javascript">
+        function generateBarCode() {
+            var nric = $('#text').val();
+            var url = 'https://api.qrserver.com/v1/create-qr-code/?data=' + nric + '&amp;size=50x50';
+            $('#barcode').attr('src', url);
+        }
+    </script>
+    <style>
+
+        .img-container {
+            text-align: center;
+            display: block;
+        }
+
+        table {
+            width: 20%;
+        }
+
+        table, th, td {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        tr.border-bottom, td {
+            border-bottom: 1px solid #000;
+        }
+
+        td, th {
+            padding: 5px;
+            text-align: left;
+        }
+
+        p {
+            font-size: 8px;
+        }
+
+        h2 {
+            font-size: 10px;
+            margin-top: 120px;
+        }
+
+    </style>
+</head>
+<body>
+<div>
+    <center>
+        <div></div>
+        <div>
+            <h2>Заказы<br><br>******************</h2>
+        </div>
+    </center>
+    <div>
+        <div>
+            <table>
+                <tr class="border-bottom">
+                <tr>
+                    <td><p></p>Магазин</td>
+                    <td><p></p></td>
+                    <td><p></p></td>
+                    <td><p>{{ store_order.store.name }}</p></td>
+                </tr>
+
+                <tr>
+                    <td><p>Дата</p></td>
+                    <td><p></p></td>
+                    <td><p></p></td>
+                    <td><p>{{ store_order.date_sent }}</p></td>
+                </tr>
+
+                <tr>
+                    <th><p>Наименование</p></th>
+                    <th><p>К-во</p></th>
+                    <th><p>Цена</p></th>
+                    <th><p>Сумма</p></th>
+                    <br>
+                </tr>
+                {% for item in store_order.store_ordered_items.all %}
+                    <tr>
+                        <td><p>{{ item.global_item.name }}</p></td>
+                        <td><p>{{ item.quantity }}</p></td>
+                        <td><p>{{ item.cost_one }}</p></td>
+                        <td><p>{{ item.cost_total }}</p></td>
+                    </tr>
+                {% endfor %}
+
+                <tr>
+                    <th><p>Итого:</p></th>
+                    <th><p></p></th>
+                    <th><p></p></th>
+                    <th><p>{{ store_order.ordered_items_sum }}</p></th>
+                </tr>
+
+                <tr>
+                    <td><p>Всего наименований:</p></td>
+                    <td><p></p></td>
+                    <td><p></p></td>
+                    <td><p>{{ store_order.ordered_items_cnt }}</p></td>
+                </tr>
+
+                <tr>
+                    <td><p>Итого к оплате:</p></td>
+                    <td><p></p></td>
+                    <td><p></p></td>
+                    <td><p>{{ store_order.total }}</p></td>
+                </tr>
+
+            </table>
+            <br><br>
+{#            <div class="img-container">#}
+{#                <img id='barcode'#}
+{#                     src="https://api.qrserver.com/v1/create-qr-code/?data={{ store_order.unique_id }}&amp;size=100x100"#}
+{#                     alt=""#}
+{#                     title="HELLO"#}
+{#                     width="50"#}
+{#                     height="50"/>#}
+{#            </div>#}
+        </div>
+    </div>
+</div>
+</body>
+</html>
